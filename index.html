@@ -1,0 +1,2073 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="勤怠管理">
+<title>勤怠管理アプリ（独立版）- 勤務形態一覧表対応</title>
+<style>
+*{box-sizing:border-box}
+:root{--blue:#2563eb;--blue2:#1d4ed8;--gray:#f3f4f6;--border:#e5e7eb;--text:#111827;--muted:#6b7280;--green:#059669;--red:#dc2626;--amber:#d97706}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;background:#f9fafb;color:var(--text);padding-bottom:84px}
+header{background:#fff;border-bottom:1px solid var(--border);padding:14px 16px 10px;position:sticky;top:0;z-index:10}
+header h1{font-size:19px;margin:0}
+header p{margin:4px 0 0;font-size:12px;color:var(--muted);line-height:1.5}
+.badge{display:inline-block;background:#eff6ff;color:var(--blue);border:1px solid #bfdbfe;font-size:11px;padding:2px 7px;border-radius:999px;font-weight:700}
+.tabs{display:flex;gap:6px;padding:10px 12px 0;overflow-x:auto}
+.tab{flex:1;min-width:78px;text-align:center;padding:10px 6px;background:#fff;border:1px solid var(--border);border-radius:999px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap}
+.tab.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+main{padding:12px}
+.card{background:#fff;border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:12px}
+.card h2{font-size:16px;margin:0 0 10px}
+.card h3{font-size:14px;margin:14px 0 8px}
+label{font-size:12px;font-weight:700;color:#374151;display:block;margin:10px 0 5px}
+input,select,textarea{width:100%;padding:11px 10px;border:1px solid #d1d5db;border-radius:10px;font-size:16px;background:#fff}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.btn{width:100%;padding:12px;border-radius:12px;border:none;font-weight:800;font-size:15px;cursor:pointer;margin-top:10px}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-secondary{background:#fff;border:1px solid var(--border);color:var(--text)}
+.btn-danger{background:#fef2f2;color:var(--red);border:1px solid #fecaca}
+.btn-small{width:auto;padding:8px 12px;font-size:13px;margin-top:0}
+.flex{display:flex;gap:8px;align-items:center}
+.flex-between{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.muted{color:var(--muted);font-size:12px;line-height:1.6}
+.day-row{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid #f3f4f6}
+.day-num{width:36px;text-align:center}
+.day-num b{display:block;font-size:16px}
+.day-num span{font-size:11px;color:var(--muted)}
+.day-main{flex:1}
+.day-main select{padding:8px;font-size:14px}
+.time-inputs{display:flex;gap:6px;margin-top:6px}
+.time-inputs input{padding:8px 6px;font-size:14px;text-align:center}
+.summary{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center}
+.summary div{background:var(--gray);border-radius:12px;padding:10px 4px}
+.summary b{font-size:18px;display:block}
+.summary span{font-size:11px;color:var(--muted)}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th,td{border:1px solid var(--border);padding:6px 5px;text-align:center;vertical-align:middle}
+th{background:#eff6ff;font-weight:800}
+td.left,th.left{text-align:left}
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.staff-item{border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:8px;background:#fff}
+.hidden{display:none!important}
+.notice{background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:12px;font-size:13px;line-height:1.7}
+.success{background:#ecfdf5;border:1px solid #a7f3d0;border-radius:12px;padding:12px;font-size:13px;line-height:1.7}
+.checks{display:flex;flex-wrap:wrap;gap:6px}
+.checks label{margin:0;display:flex;align-items:center;gap:4px;background:var(--gray);padding:7px 10px;border-radius:999px;font-size:13px}
+.checks input{width:auto}
+.punch-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:10px}
+.punch-staff{border:2px solid var(--border);background:#fff;border-radius:16px;padding:18px 8px;min-height:104px;cursor:pointer;text-align:center;width:100%;color:var(--text)}
+.punch-staff .pname{font-size:21px;font-weight:800;display:block}
+.punch-staff .pstatus{font-size:14px;display:block;margin-top:8px;font-weight:700}
+.punch-staff.st-work{border-color:var(--green);background:#ecfdf5}
+.punch-staff.st-work .pstatus{color:var(--green)}
+.punch-staff.st-break{border-color:var(--amber);background:#fffbeb}
+.punch-staff.st-break .pstatus{color:var(--amber)}
+.punch-staff.st-done{border-color:#c7d2fe;background:#eef2ff}
+.punch-staff.st-done .pstatus{color:var(--blue)}
+.punch-staff.st-paid{border-color:#ddd6fe;background:#f5f3ff}
+.punch-staff.st-paid .pstatus{color:#7c3aed}
+.punch-staff.st-absent .pstatus{color:var(--red)}
+.punch-staff.st-none .pstatus{color:var(--muted)}
+.punch-actions{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.punch-btn{padding:28px 6px;font-size:23px;font-weight:800;border:none;border-radius:16px;cursor:pointer;color:#fff;min-height:96px}
+.punch-btn:disabled{opacity:.3;cursor:default}
+.pb-in{background:var(--green)}
+.pb-bs{background:var(--amber)}
+.pb-be{background:#0891b2}
+.pb-out{background:var(--blue2)}
+.punch-clock{font-size:42px;font-weight:800;letter-spacing:1px;line-height:1.1}
+.toggle-row{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:700;color:var(--text);margin:6px 0}
+.toggle-row input{width:26px;height:26px;flex:none}
+fieldset{border:1px solid var(--border);border-radius:12px;padding:10px 12px 14px;margin:14px 0 4px}
+fieldset legend{font-size:13px;font-weight:800;padding:0 6px}
+.kv-row{display:grid;grid-template-columns:1fr 110px 40px;gap:6px;margin-top:6px;align-items:center}
+.kv-row input{padding:9px 8px;font-size:14px}
+.kv-del{padding:8px 0;border:1px solid #fecaca;background:#fef2f2;color:var(--red);border-radius:8px;font-weight:700;cursor:pointer}
+#pinOverlay{position:fixed;inset:0;background:rgba(17,24,39,.55);z-index:50;display:flex;align-items:center;justify-content:center;padding:20px}
+#pinOverlay .pin-card{background:#fff;border-radius:16px;padding:22px;width:100%;max-width:320px;text-align:center}
+#pinOverlay input{font-size:24px;text-align:center;letter-spacing:8px}
+.import-table{font-size:12px}
+.import-table td,.import-table th{padding:5px 4px}
+footer{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--border);padding:10px 14px calc(10px + env(safe-area-inset-bottom));display:flex;gap:8px;z-index:20}
+footer button{flex:1;padding:11px;border-radius:10px;border:1px solid var(--border);background:#fff;font-weight:700;font-size:13px}
+</style>
+</head>
+<body>
+<header>
+<div class="flex-between"><h1>勤怠管理</h1><span class="badge">独立版 / オフライン対応</span></div>
+<p id="facilityLabel">事業所未設定 ・ 勤務形態一覧表に自動反映</p>
+</header>
+
+<nav class="tabs">
+<button class="tab" data-tab="punch">🕘 打刻</button>
+<button class="tab active" data-tab="input">📅 勤怠入力</button>
+<button class="tab" data-tab="staff">👥 職員</button>
+<button class="tab" data-tab="sheet">📋 一覧表</button>
+<button class="tab" data-tab="settings">⚙️ 設定</button>
+</nav>
+
+<main>
+<!-- PUNCH -->
+<section id="tab-punch" class="hidden">
+<div id="punchMain">
+<div class="card" style="text-align:center">
+<div id="punchDate" style="font-size:17px;font-weight:700"></div>
+<div id="punchClock" class="punch-clock">--:--:--</div>
+<p class="muted" style="margin-bottom:0">自分の名前をタップしてください</p>
+</div>
+<div id="punchNoStaff" class="notice hidden">先に「職員」タブで職員を登録してください。</div>
+<div id="punchGrid" class="punch-grid"></div>
+</div>
+<div id="punchPanel" class="hidden">
+<div class="card" style="text-align:center">
+<div id="punchPanelName" style="font-size:26px;font-weight:800"></div>
+<div id="punchPanelStatus" style="font-size:17px;margin-top:8px;font-weight:700"></div>
+<div id="punchPanelClock" class="punch-clock" style="margin-top:8px">--:--:--</div>
+<div class="punch-actions">
+<button class="punch-btn pb-in" id="pbIn">出勤</button>
+<button class="punch-btn pb-bs" id="pbBreakStart">休憩開始</button>
+<button class="punch-btn pb-be" id="pbBreakEnd">休憩終了</button>
+<button class="punch-btn pb-out" id="pbOut">退勤</button>
+</div>
+<button class="btn btn-secondary" id="punchBackBtn" style="margin-top:16px">← 名前の一覧に戻る</button>
+</div>
+</div>
+<div id="punchDone" class="hidden">
+<div class="card" style="text-align:center;padding:36px 14px">
+<div style="font-size:46px">✅</div>
+<div id="punchDoneMsg" style="font-size:27px;font-weight:800;line-height:1.6;margin-top:12px"></div>
+<button class="btn btn-secondary" id="punchDoneBackBtn" style="margin-top:18px">名前の一覧に戻る</button>
+</div>
+</div>
+</section>
+
+<!-- INPUT -->
+<section id="tab-input">
+<div class="card">
+<h2>月の勤怠を入力</h2>
+<div class="row">
+<div><label>対象月</label><input type="month" id="monthInput"></div>
+<div><label>職員</label><select id="staffSelect"></select></div>
+</div>
+<div id="noStaffInput" class="notice hidden">先に「職員」タブで職員を登録してください。</div>
+<div id="inputArea">
+<div class="summary" style="margin-top:14px">
+<div><b id="sumDays">0日</b><span>出勤日数</span></div>
+<div><b id="sumHours">0h</b><span>合計時間</span></div>
+<div><b id="sumPaid">0日</b><span>有給</span></div>
+</div>
+<h3>まとめて入力（標準勤務）</h3>
+<p class="muted">曜日を選んで「標準勤務で埋める」を押すと、未入力の日が標準時間で埋まります。既に入力済みの日は上書きしません。</p>
+<div class="checks" id="weekdayChecks">
+<label><input type="checkbox" value="1" checked> 月</label>
+<label><input type="checkbox" value="2" checked> 火</label>
+<label><input type="checkbox" value="3" checked> 水</label>
+<label><input type="checkbox" value="4" checked> 木</label>
+<label><input type="checkbox" value="5" checked> 金</label>
+<label><input type="checkbox" value="6"> 土</label>
+<label><input type="checkbox" value="0"> 日</label>
+</div>
+<button class="btn btn-secondary" id="bulkBtn">標準勤務で埋める</button>
+<h3>日ごとの入力</h3>
+<div id="daysList"></div>
+</div>
+</div>
+<div class="card">
+<h3>使い方（iPhone）</h3>
+<p class="muted">Safariでこのファイルを開く → 共有ボタン →「ホーム画面に追加」でアプリのように使えます。一度開けばオフラインでも動作し、データはこの端末のブラウザ内に保存されます（localStorage）。機種変更やブラウザデータ削除に備え、「設定」から定期的にJSONバックアップを保存してください。</p>
+</div>
+</section>
+
+<!-- STAFF -->
+<section id="tab-staff" class="hidden">
+<div class="card">
+<h2 id="staffFormTitle">職員を追加</h2>
+<label>氏名 *</label><input id="sName" placeholder="例：山田 花子">
+<div class="row">
+<div><label>職種</label><input id="sJob" placeholder="例：児童指導員"></div>
+<div><label>資格</label><input id="sQual" placeholder="例：保育士"></div>
+</div>
+<label>勤務形態</label>
+<select id="sType"><option>常勤・専従</option><option>常勤・兼務</option><option>非常勤・専従</option><option>非常勤・兼務</option></select>
+<div class="row3">
+<div><label>標準 開始</label><input type="time" id="sStart" value="09:00"></div>
+<div><label>標準 終了</label><input type="time" id="sEnd" value="18:00"></div>
+<div><label>休憩(分)</label><input type="number" id="sBreak" value="60" min="0" step="15"></div>
+</div>
+<fieldset>
+<legend>給与（管理者用）</legend>
+<div id="payLockNotice" class="hidden">
+<p class="muted">給与情報は管理者PINでロックされています。表示・編集するにはPINを入力してください。</p>
+<button class="btn btn-secondary" id="payUnlockBtn" type="button">PINを入力してロック解除</button>
+</div>
+<div id="payFields">
+<div class="row">
+<div><label>雇用形態</label><select id="payType"><option value="hourly">時給制</option><option value="monthly">月給制</option></select></div>
+<div><label>所属</label><input id="payDept" placeholder="例：放課後等デイサービス"></div>
+</div>
+<div class="row" id="payWageRow">
+<div><label>時給（円）</label><input type="number" id="payWage" min="0" step="1" placeholder="例：1200"></div>
+<div><label>月額基本給（円）</label><input type="number" id="payMonthly" min="0" step="1" placeholder="月給制の場合"></div>
+</div>
+<div class="row">
+<div><label>交通費の方式</label><select id="payTransMode"><option value="km">km単価（自走KM×単価）</option><option value="fixed">月額固定</option><option value="none">なし</option></select></div>
+<div><label>単価（円/km）または月額（円）</label><input type="number" id="payTransRate" min="0" step="1" placeholder="例：38"></div>
+</div>
+<label>手当（名称・金額）</label>
+<div id="payAllowList"></div>
+<button class="btn btn-secondary btn-small" id="payAllowAdd" type="button" style="margin-top:8px">＋ 手当を追加</button>
+<label style="margin-top:14px">控除の初期値（円／月）</label>
+<div class="row">
+<div><label>健康保険料</label><input type="number" id="payDedHealth" min="0" step="1" value="0"></div>
+<div><label>厚生年金保険料</label><input type="number" id="payDedPension" min="0" step="1" value="0"></div>
+</div>
+<div class="row3">
+<div><label>雇用保険料</label><input type="number" id="payDedEmp" min="0" step="1" value="0"></div>
+<div><label>住民税</label><input type="number" id="payDedRes" min="0" step="1" value="0"></div>
+<div><label>所得税</label><input type="number" id="payDedInc" min="0" step="1" value="0"></div>
+</div>
+<label>その他の控除（名称・金額）</label>
+<div id="payDedOtherList"></div>
+<button class="btn btn-secondary btn-small" id="payDedOtherAdd" type="button" style="margin-top:8px">＋ 控除を追加</button>
+<h3 style="margin-top:16px">賃金台帳用の情報</h3>
+<div class="row">
+<div><label>生年月日</label><input type="date" id="payBirth"></div>
+<div><label>雇入年月日</label><input type="date" id="payHired"></div>
+</div>
+<div class="row">
+<div><label>性別</label><select id="payGender"><option value="">未設定</option><option>男</option><option>女</option></select></div>
+<div></div>
+</div>
+<div id="payBlockedNote"></div>
+</div>
+</fieldset>
+<button class="btn btn-primary" id="addStaffBtn">職員を追加する</button>
+<button class="btn btn-secondary hidden" id="cancelEditBtn" type="button">編集をやめる</button>
+</div>
+<div id="staffList"></div>
+</section>
+
+<!-- SHEET -->
+<section id="tab-sheet" class="hidden">
+<div class="card">
+<div class="flex-between"><h2 style="margin:0">勤務形態一覧表</h2><span class="badge" id="sheetMonthLabel"></span></div>
+<p class="muted" id="sheetFacility" style="margin-top:8px"></p>
+<div class="table-wrap"><table id="sheetTable"></table></div>
+<p class="muted">※ 常勤換算 = 月の勤務時間 ÷ 常勤の月間基準時間（週所定時間 × 4週）で算出。週平均は月合計 ÷ 4週。有給は標準勤務時間で計算しています。自治体指定のExcel様式へのセル単位の流し込みは、下の「書類出力」から書き出せます。</p>
+<button class="btn btn-primary" id="csvBtn">CSVで書き出す（Excelで開けます）</button>
+</div>
+<div class="card">
+<h2>職種別の集計</h2>
+<div class="table-wrap"><table id="jobTable"></table></div>
+</div>
+<div class="card">
+<h2>書類出力</h2>
+<p class="muted">職場の様式ファイル（マスターExcel）を読み込み、職員ごとの個人シートを選んでから、作りたい書類のボタンを押してください。元のファイルは変更されず、新しいファイルが書き出されます。様式ファイルはこの端末の中だけで処理され、外部に送信されることはありません。</p>
+<p class="muted">・「勤務形態一覧表を作成」：個人シートへ、対象月の勤怠（出勤時刻・退勤時刻・休憩・有給日数）を反映します。勤務形態一覧表はExcel側の数式で自動計算されます。<br>・「賃金台帳を作成」：個人シートへ勤怠を反映したうえで、賃金台帳の翌月支給の列に、個人シートの集計（労働日数・労働時間数・基本給・交通費・控除・差引支給額）への参照式を書き込みます。金額の計算はExcel側の数式が行います。台帳に手入力の値がある場合は、置き換える前に確認します。<br>・「給与明細を作成」：職員ごとの給与明細を新しいExcelファイルで作成します。金額は様式ファイルに保存されている値（Excelで最後に保存した時点の計算結果）を読み取って表示します。まだExcelで開いて保存し直していない金額は「Excelで確認」と表示されます。</p>
+<p class="muted">※ この機能を使うときだけインターネット接続が必要です（書き出し用ライブラリをその時だけ読み込みます）。対象月は、上の「勤怠入力」タブで選んでいる月です。個人シートに対象月の記入欄がない職員はスキップされます。</p>
+<label>様式ファイル（.xlsx）を選択</label>
+<input type="file" id="masterFile" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+<div id="masterInfo"></div>
+<div id="sheetMapArea"></div>
+<button class="btn btn-primary hidden" id="reflectBtn">勤務形態一覧表を作成</button>
+<button class="btn btn-primary hidden" id="ledgerBtn">賃金台帳を作成</button>
+<button class="btn btn-primary hidden" id="payslipBtn">給与明細を作成</button>
+<div id="reflectResult"></div>
+<div id="ledgerResult"></div>
+<div id="payslipResult"></div>
+</div>
+<div class="card">
+<h2>アプリから新規作成（様式ファイル不要）</h2>
+<p class="muted">様式ファイルを使わず、このアプリの勤怠データと給与マスタから、勤務形態一覧表・賃金台帳・給与明細を新しいExcelファイルとして作成します。金額の計算方法は、職場の様式ファイルの計算方式に合わせています（基本給＝勤務時間×時給、交通費＝自走KM×単価など）。有給は日数の表示のみで、金額には含みません（様式ファイルの計算と同じ扱いです）。控除は給与マスタに登録した金額を使い、アプリが税率・保険料率を計算することはありません。</p>
+<div id="newDocLock" class="hidden">
+<p class="muted">給与マスタと新規作成は管理者PINでロックされています。</p>
+<button class="btn btn-secondary" id="newDocUnlockBtn" type="button">PINを入力してロック解除</button>
+</div>
+<div id="newDocArea">
+<h3>給与マスタを取り込む</h3>
+<p class="muted">様式ファイルから、各職員の時給・交通費の単価・控除額・台帳情報（生年月日など）を読み取り、給与マスタに取り込みます。内容を確認してから取り込みます（この取り込み自体では様式ファイルは変更されません）。</p>
+<label>様式ファイル（.xlsx）を選択</label>
+<input type="file" id="payImportFile" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+<button class="btn btn-secondary" id="payImportBtn" type="button">内容を確認する</button>
+<div id="payImportArea"></div>
+<h3>新しい書類を作成</h3>
+<p class="muted">対象月は、上の「勤怠入力」タブで選んでいる月です。賃金台帳は、アプリに勤怠データのあるすべての月を列に並べて作成します。</p>
+<button class="btn btn-primary" id="genShiftBtn" type="button">勤務形態一覧表を新規作成</button>
+<button class="btn btn-primary" id="genLedgerBtn" type="button">賃金台帳を新規作成</button>
+<button class="btn btn-primary" id="genPayslipBtn" type="button">給与明細を新規作成</button>
+<div id="genResult"></div>
+</div>
+</div>
+</section>
+
+<!-- SETTINGS -->
+<section id="tab-settings" class="hidden">
+<div class="card">
+<h2>事業所の設定</h2>
+<label>事業所名</label><input id="setFacility" placeholder="例：放課後等デイサービス ○○">
+<label>サービス種類</label><input id="setService" placeholder="例：放課後等デイサービス">
+<div class="row">
+<div><label>常勤の週所定時間</label><input type="number" id="setWeekly" value="40" step="0.5"></div>
+<div><label>常勤換算の基準（週数）</label><input type="number" id="setWeeks" value="4" step="1"></div>
+</div>
+<button class="btn btn-primary" id="saveSettingsBtn">設定を保存</button>
+<div id="saveMsg"></div>
+</div>
+<div class="card">
+<h2>管理者PIN</h2>
+<p class="muted">PINを設定すると、給与マスタの表示・編集、給与マスタの取り込み、「アプリから新規作成」の書類出力にPINの入力が必要になります（打刻・勤怠入力・様式ファイル方式の出力は今まで通り使えます）。</p>
+<p class="muted">※ PINは共有端末での簡易ロックであり、強固なセキュリティではありません。PINはこの端末のデータ内に保存されます。</p>
+<div id="pinStatus"></div>
+<label>新しいPIN（数字4桁）</label>
+<input type="password" id="pinNew" inputmode="numeric" autocomplete="off" maxlength="4" placeholder="例：1234">
+<button class="btn btn-secondary" id="pinSetBtn" type="button">PINを設定・変更する</button>
+<button class="btn btn-danger" id="pinRemoveBtn" type="button">PINを解除する</button>
+<div id="pinMsg"></div>
+</div>
+<div class="card">
+<h2>打刻画面の設定</h2>
+<label class="toggle-row"><input type="checkbox" id="setStartPunch"> 起動時に打刻画面を表示する</label>
+<p class="muted">会社のiPhoneをタイムカードとして使う場合はONにしてください。アプリを開くと、最初に打刻画面（職員の一覧）が表示されます。変更はすぐに保存されます。</p>
+</div>
+<div class="card">
+<h2>データのバックアップ</h2>
+<p class="muted">データはこのiPhoneの中だけに保存されます。消えたら復元できないため、月に1回は書き出して保管してください。</p>
+<button class="btn btn-secondary" id="exportJsonBtn">JSONバックアップを書き出す</button>
+<label>バックアップから復元（JSONファイルを選択）</label>
+<input type="file" id="importFile" accept=".json,application/json">
+<button class="btn btn-secondary" id="importBtn">復元する</button>
+<button class="btn btn-danger" id="clearBtn">すべてのデータを削除</button>
+</div>
+<div class="card">
+<h2>このアプリについて</h2>
+<p class="muted">独立版：Museアプリ不要。インターネット接続なしでも動作します。職員名などの個人情報を扱うため、職場のルールに従って端末管理・バックアップ保管を行ってください。</p>
+</div>
+</section>
+</main>
+
+<footer>
+<button onclick="switchTab('input')">勤怠入力</button>
+<button onclick="switchTab('sheet')">一覧表</button>
+<button onclick="switchTab('settings')">バックアップ</button>
+</footer>
+
+<div id="pinOverlay" class="hidden">
+<div class="pin-card">
+<h2 style="margin:0 0 8px;font-size:17px">管理者PIN</h2>
+<p class="muted">給与情報を見るには、4桁のPINを入力してください。</p>
+<input type="password" id="pinInput" inputmode="numeric" autocomplete="off" maxlength="4">
+<div id="pinOverlayMsg"></div>
+<button class="btn btn-primary" id="pinOkBtn" type="button">ロック解除</button>
+<button class="btn btn-secondary" id="pinCancelBtn" type="button">キャンセル</button>
+</div>
+</div>
+
+<script>
+const KEY='kintai_standalone_v1';
+let state=load();
+// 旧仕様で「交通費が差し引かれる特殊な計算式（車両貸出の相殺）」のため自動計算対象外になっていた職員を、
+// 通常計算＋控除「車両貸出調整」（名前の見える調整）に移行する。
+(function(){
+  (state.staff||[]).forEach(s=>{
+    const p=s.pay;if(!p)return;
+    if(p.payBlocked&&p.payNote==='交通費が差し引かれる特殊な計算式です'){
+      p.payBlocked=false;p.payNote='';p.vehicleAdjust=true;
+      if(!p.deductions||typeof p.deductions!=='object')p.deductions={health:0,pension:0,employment:0,resident:0,income:0,others:[]};
+      if(!Array.isArray(p.deductions.others))p.deductions.others=[];
+      if(!p.deductions.others.some(o=>o&&o.name==='車両貸出調整'))p.deductions.others.push({name:'車両貸出調整',amount:0});
+    }
+  });
+})();
+function load(){try{const r=localStorage.getItem(KEY);if(r)return JSON.parse(r)}catch(e){}return{settings:{facility:'',service:'放課後等デイサービス',weekly:40,weeks:4},staff:[],records:{}}}
+function save(){localStorage.setItem(KEY,JSON.stringify(state));renderHeader()}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+function $(id){return document.getElementById(id)}
+function renderHeader(){$('facilityLabel').textContent=(state.settings.facility||'事業所未設定')+' ・ '+(state.settings.service||'')+' ・ 勤務形態一覧表に自動反映'}
+function switchTab(name){document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===name));['punch','input','staff','sheet','settings'].forEach(n=>$('tab-'+n).classList.toggle('hidden',n!==name));if(name==='sheet'){renderSheet();refreshDocLock()}if(name==='staff'){renderStaff();refreshPayLock()}if(name==='settings'){renderSettings();refreshPinStatus()}if(name==='input')renderInput();if(name==='punch')renderPunch()}
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>switchTab(t.dataset.tab)));
+window.switchTab=switchTab;
+
+// Month default
+(function(){const d=new Date();$('monthInput').value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')})();
+$('monthInput').addEventListener('change',()=>{renderInput();renderSheetLabel()});
+$('staffSelect').addEventListener('change',renderDays);
+
+function currentMonth(){return $('monthInput').value||new Date().toISOString().slice(0,7)}
+function daysInMonth(ym){const[y,m]=ym.split('-').map(Number);return new Date(y,m,0).getDate()}
+function weekdayLabel(ym,day){const[y,m]=ym.split('-').map(Number);const w=new Date(y,m-1,day).getDay();return['日','月','火','水','木','金','土'][w]}
+function getRecord(sid,ym,day){const k=ym+'-'+String(day).padStart(2,'0');return(state.records[sid]&&state.records[sid][k])||null}
+function setRecord(sid,ym,day,val){if(!state.records[sid])state.records[sid]={};const k=ym+'-'+String(day).padStart(2,'0');if(!val)delete state.records[sid][k];else state.records[sid][k]=val;save()}
+function timeToMin(t){if(!t)return 0;const[a,b]=t.split(':').map(Number);return a*60+b}
+function calcHours(rec,staff){if(!rec)return 0;if(rec.status==='paid'){return Math.max(0,(timeToMin(staff.stdEnd)-timeToMin(staff.stdStart)-(staff.stdBreak||0))/60)}if(rec.status!=='work')return 0;return Math.max(0,(timeToMin(rec.end)-timeToMin(rec.start)-(rec.breakMin||0))/60)}
+function fmtH(h){return Math.round(h*10)/10}
+
+function renderInput(){
+  const sel=$('staffSelect');const cur=sel.value;
+  sel.innerHTML=state.staff.map(s=>`<option value="${s.id}">${escapeHtml(s.name)}（${escapeHtml(s.job||'')}）</option>`).join('');
+  if(cur&&state.staff.some(s=>s.id===cur))sel.value=cur;
+  $('noStaffInput').classList.toggle('hidden',state.staff.length>0);
+  $('inputArea').classList.toggle('hidden',state.staff.length===0);
+  renderDays();
+}
+function renderDays(){
+  const sid=$('staffSelect').value;if(!sid){$('daysList').innerHTML='';return}
+  const staff=state.staff.find(s=>s.id===sid);const ym=currentMonth();const total=daysInMonth(ym);
+  let html='';let sumH=0,sumD=0,sumP=0;
+  for(let d=1;d<=total;d++){
+    const rec=getRecord(sid,ym,d)||{status:'off',start:staff.stdStart,end:staff.stdEnd,breakMin:staff.stdBreak};
+    const h=calcHours(getRecord(sid,ym,d),staff);sumH+=h;if(getRecord(sid,ym,d)?.status==='work')sumD++;if(getRecord(sid,ym,d)?.status==='paid')sumP++;
+    const w=weekdayLabel(ym,d);const color=(w==='日')?'color:#dc2626':(w==='土')?'color:#2563eb':'';
+    html+=`<div class="day-row"><div class="day-num"><b>${d}</b><span style="${color}">${w}</span></div><div class="day-main"><select data-day="${d}" class="statusSel"><option value="off" ${rec.status==='off'?'selected':''}>休み</option><option value="work" ${rec.status==='work'?'selected':''}>出勤</option><option value="paid" ${rec.status==='paid'?'selected':''}>有給</option><option value="absent" ${rec.status==='absent'?'selected':''}>欠勤</option></select><div class="time-inputs ${rec.status==='work'?'':'hidden'}" id="time-${d}"><input type="time" value="${rec.start||staff.stdStart}" data-day="${d}" class="tStart"><input type="time" value="${rec.end||staff.stdEnd}" data-day="${d}" class="tEnd"><input type="number" value="${rec.breakMin??staff.stdBreak}" data-day="${d}" class="tBreak" placeholder="休憩分" min="0" step="15"><input type="number" value="${rec.km??''}" data-day="${d}" class="tKm" placeholder="自走km" min="0" step="1"></div></div><div style="width:52px;text-align:right;font-weight:700;font-size:13px">${h?fmtH(h)+'h':''}</div></div>`;
+  }
+  $('daysList').innerHTML=html;$('sumDays').textContent=sumD+'日';$('sumHours').textContent=fmtH(sumH)+'h';$('sumPaid').textContent=sumP+'日';
+  document.querySelectorAll('.statusSel').forEach(el=>el.addEventListener('change',e=>{
+    const d=Number(e.target.dataset.day);const st=e.target.value;const staff2=state.staff.find(s=>s.id===sid);
+    if(st==='off')setRecord(sid,ym,d,null);else setRecord(sid,ym,d,{status:st,start:staff2.stdStart,end:staff2.stdEnd,breakMin:staff2.stdBreak});renderDays();
+  }));
+  document.querySelectorAll('.tStart,.tEnd,.tBreak,.tKm').forEach(el=>el.addEventListener('change',()=>{
+    const d=Number(el.dataset.day);const cur=getRecord(sid,ym,d)||{status:'work',start:staff.stdStart,end:staff.stdEnd,breakMin:staff.stdBreak};
+    const row=el.closest('.day-main');cur.start=row.querySelector('.tStart').value;cur.end=row.querySelector('.tEnd').value;cur.breakMin=Number(row.querySelector('.tBreak').value||0);const kmEl=row.querySelector('.tKm');const kmv=kmEl?Number(kmEl.value||0):0;if(kmv>0)cur.km=kmv;else delete cur.km;cur.status='work';setRecord(sid,ym,d,cur);renderDays();
+  }));
+}
+$('bulkBtn').addEventListener('click',()=>{
+  const sid=$('staffSelect').value;if(!sid)return;const staff=state.staff.find(s=>s.id===sid);const ym=currentMonth();const total=daysInMonth(ym);
+  const checked=[...document.querySelectorAll('#weekdayChecks input:checked')].map(i=>Number(i.value));
+  for(let d=1;d<=total;d++){const[y,m]=ym.split('-').map(Number);const w=new Date(y,m-1,d).getDay();if(checked.includes(w)&&!getRecord(sid,ym,d)){setRecord(sid,ym,d,{status:'work',start:staff.stdStart,end:staff.stdEnd,breakMin:staff.stdBreak})}}
+  renderDays();alert('標準勤務で埋めました');
+});
+
+// Staff
+let editingStaffId=null;
+function payKvRowHtml(name,amount){
+  return '<div class="kv-row"><input type="text" class="kv-name" placeholder="名称" value="'+escapeHtml(name||'')+'"><input type="number" class="kv-amt" min="0" step="1" placeholder="金額" value="'+(amount==null?'':amount)+'"><button type="button" class="kv-del">削除</button></div>';
+}
+function renderPayKv(listId,items){
+  const el=$(listId);if(!el)return;
+  el.innerHTML=(items||[]).map(it=>payKvRowHtml(it.name,it.amount)).join('');
+  el.querySelectorAll('.kv-del').forEach(b=>b.addEventListener('click',()=>{b.closest('.kv-row').remove()}));
+}
+function readPayKv(listId){
+  const el=$(listId);if(!el)return[];
+  const out=[];
+  el.querySelectorAll('.kv-row').forEach(r=>{
+    const n=r.querySelector('.kv-name').value.trim();const a=Number(r.querySelector('.kv-amt').value||0);
+    if(n||a)out.push({name:n,amount:a});
+  });
+  return out;
+}
+function defaultPay(){return{type:'hourly',wage:null,monthlyBase:null,transport:{mode:'km',rate:38},allowances:[],deductions:{health:0,pension:0,employment:0,resident:0,income:0,others:[]},birth:'',hired:'',gender:'',dept:'',payBlocked:false,payNote:'',vehicleAdjust:false}}
+function fillPayForm(pay){
+  const p=Object.assign(defaultPay(),pay||{});
+  p.transport=Object.assign({mode:'km',rate:38},p.transport||{});
+  p.deductions=Object.assign({health:0,pension:0,employment:0,resident:0,income:0,others:[]},p.deductions||{});
+  $('payType').value=p.type||'hourly';
+  $('payWage').value=p.wage==null?'':p.wage;
+  $('payMonthly').value=p.monthlyBase==null?'':p.monthlyBase;
+  $('payTransMode').value=p.transport.mode||'km';
+  $('payTransRate').value=p.transport.rate==null?'':p.transport.rate;
+  $('payDedHealth').value=p.deductions.health||0;
+  $('payDedPension').value=p.deductions.pension||0;
+  $('payDedEmp').value=p.deductions.employment||0;
+  $('payDedRes').value=p.deductions.resident||0;
+  $('payDedInc').value=p.deductions.income||0;
+  renderPayKv('payAllowList',p.allowances||[]);
+  renderPayKv('payDedOtherList',p.deductions.others||[]);
+  $('payBirth').value=p.birth||'';
+  $('payHired').value=p.hired||'';
+  $('payGender').value=p.gender||'';
+  $('payDept').value=p.dept||'';
+  const bn=$('payBlockedNote');
+  if(p.payBlocked)bn.innerHTML='<div class="notice" style="margin-top:10px">⚠ この職員は計算方式が特殊なため、アプリの自動計算の対象外です（'+escapeHtml(p.payNote||'要確認')+'）。給与明細・賃金台帳では金額を「要確認」と表示します。</div>';
+  else if(p.vehicleAdjust)bn.innerHTML='<div class="notice" style="margin-top:10px">🚗 旧ファイルでは車両貸出の相殺（他職員の交通費分を差し引き）が特殊計算されていました。アプリでは通常計算に統一しています。相殺が必要な月は、控除の「車両貸出調整」に金額を入れてください。</div>';
+  else bn.innerHTML='';
+}
+function readPayForm(existing){
+  const p=Object.assign(defaultPay(),existing||{});
+  p.transport=Object.assign({mode:'km',rate:38},(existing&&existing.transport)||{});
+  p.deductions=Object.assign({health:0,pension:0,employment:0,resident:0,income:0,others:[]},(existing&&existing.deductions)||{});
+  if(adminIsLocked())return p; // ロック中は既存の給与情報をそのまま保持する
+  p.type=$('payType').value;
+  p.wage=$('payWage').value===''?null:Number($('payWage').value||0);
+  p.monthlyBase=$('payMonthly').value===''?null:Number($('payMonthly').value||0);
+  p.transport={mode:$('payTransMode').value,rate:$('payTransRate').value===''?null:Number($('payTransRate').value||0)};
+  p.allowances=readPayKv('payAllowList');
+  p.deductions={health:Number($('payDedHealth').value||0),pension:Number($('payDedPension').value||0),employment:Number($('payDedEmp').value||0),resident:Number($('payDedRes').value||0),income:Number($('payDedInc').value||0),others:readPayKv('payDedOtherList')};
+  p.birth=$('payBirth').value||'';
+  p.hired=$('payHired').value||'';
+  p.gender=$('payGender').value||'';
+  p.dept=$('payDept').value.trim();
+  return p;
+}
+function clearStaffForm(){
+  editingStaffId=null;
+  $('sName').value='';$('sJob').value='';$('sQual').value='';$('sType').selectedIndex=0;
+  $('sStart').value='09:00';$('sEnd').value='18:00';$('sBreak').value=60;
+  fillPayForm(null);
+  $('staffFormTitle').textContent='職員を追加';
+  $('addStaffBtn').textContent='職員を追加する';
+  $('cancelEditBtn').classList.add('hidden');
+}
+$('addStaffBtn').addEventListener('click',()=>{
+  const name=$('sName').value.trim();if(!name){alert('氏名を入力してください');return}
+  const base={name,job:$('sJob').value.trim(),qual:$('sQual').value.trim(),type:$('sType').value,stdStart:$('sStart').value,stdEnd:$('sEnd').value,stdBreak:Number($('sBreak').value||0)};
+  if(editingStaffId){
+    const s=state.staff.find(x=>x.id===editingStaffId);
+    if(s){Object.assign(s,base);s.pay=readPayForm(s.pay)}
+    save();clearStaffForm();renderStaff();renderInput();alert('職員情報を保存しました');
+  }else{
+    const ns=Object.assign({id:uid()},base);
+    ns.pay=readPayForm(null);
+    state.staff.push(ns);
+    save();clearStaffForm();renderStaff();renderInput();alert('職員を追加しました');
+  }
+});
+$('cancelEditBtn').addEventListener('click',()=>{clearStaffForm()});
+window.editStaff=function(id){
+  const s=state.staff.find(x=>x.id===id);if(!s)return;
+  editingStaffId=id;
+  $('sName').value=s.name;$('sJob').value=s.job||'';$('sQual').value=s.qual||'';$('sType').value=s.type;
+  $('sStart').value=s.stdStart;$('sEnd').value=s.stdEnd;$('sBreak').value=s.stdBreak;
+  fillPayForm(s.pay);
+  refreshPayLock();
+  $('staffFormTitle').textContent='職員を編集';
+  $('addStaffBtn').textContent='変更を保存する';
+  $('cancelEditBtn').classList.remove('hidden');
+  window.scrollTo({top:0,behavior:'smooth'});
+};
+function renderStaff(){
+  const el=$('staffList');
+  if(!state.staff.length){el.innerHTML='<div class="card"><p class="muted">まだ職員が登録されていません。</p></div>';return}
+  el.innerHTML=state.staff.map(s=>{
+    let payInfo='';
+    if(s.pay&&!adminIsLocked()){
+      if(s.pay.payBlocked)payInfo='<br>給与：<span style="color:var(--red)">自動計算の対象外（要確認）</span>';
+      else if(s.pay.type==='monthly')payInfo='<br>給与：月給 '+(s.pay.monthlyBase!=null?Number(s.pay.monthlyBase).toLocaleString()+'円':'未設定');
+      else payInfo='<br>給与：時給 '+(s.pay.wage!=null?Number(s.pay.wage).toLocaleString()+'円':'未設定');
+    }
+    return `<div class="staff-item"><div class="flex-between"><b>${escapeHtml(s.name)}</b><span class="badge">${escapeHtml(s.type)}</span></div><p class="muted">${escapeHtml(s.job||'')} ${s.qual?' / '+escapeHtml(s.qual):''}<br>標準 ${s.stdStart}〜${s.stdEnd}（休憩 ${s.stdBreak}分）${payInfo}</p><div class="flex"><button class="btn btn-secondary btn-small" onclick="editStaff('${s.id}')">編集</button><button class="btn btn-danger btn-small" onclick="delStaff('${s.id}')">削除</button></div></div>`;
+  }).join('');
+}
+window.delStaff=function(id){if(!confirm('この職員と勤怠記録を削除しますか？'))return;state.staff=state.staff.filter(s=>s.id!==id);delete state.records[id];if(editingStaffId===id)clearStaffForm();save();renderStaff();renderInput()};
+
+// Sheet
+function renderSheetLabel(){$('sheetMonthLabel').textContent=currentMonth()}
+function renderSheet(){
+  renderSheetLabel();const ym=currentMonth();const total=daysInMonth(ym);const base=(state.settings.weekly||40)*(state.settings.weeks||4);
+  $('sheetFacility').textContent=(state.settings.facility||'')+' / '+(state.settings.service||'')+' / '+ym;
+  let head=`<tr><th class="left">氏名</th><th class="left">職種・資格</th><th>形態</th>`;for(let d=1;d<=total;d++)head+=`<th>${d}<br><span style="font-weight:400">${weekdayLabel(ym,d)}</span></th>`;head+=`<th>合計</th><th>日数</th><th>週平均</th><th>常勤換算</th></tr>`;
+  let body='';
+  state.staff.forEach(s=>{
+    let sum=0,days=0;let cells='';
+    for(let d=1;d<=total;d++){const rec=getRecord(s.id,ym,d);const h=calcHours(rec,s);sum+=h;if(rec&&(rec.status==='work'||rec.status==='paid'))days++;let txt='';if(rec){if(rec.status==='work')txt=fmtH(h);else if(rec.status==='paid')txt='有';else if(rec.status==='absent')txt='欠';else txt=''}cells+=`<td>${txt}</td>`}
+    const weekly=sum/(state.settings.weeks||4);const conv=base?Math.min(999,sum/base):0;
+    body+=`<tr><td class="left"><b>${escapeHtml(s.name)}</b></td><td class="left">${escapeHtml(s.job||'')}<br>${escapeHtml(s.qual||'')}</td><td>${escapeHtml(s.type)}</td>${cells}<td><b>${fmtH(sum)}</b></td><td>${days}</td><td>${fmtH(weekly)}</td><td><b>${conv.toFixed(2)}</b></td></tr>`;
+  });
+  if(!state.staff.length)body='<tr><td colspan="40" class="muted">職員が登録されていません</td></tr>';
+  $('sheetTable').innerHTML=head+body;
+  // job aggregation
+  const map={};state.staff.forEach(s=>{const k=s.job||'未設定';if(!map[k])map[k]={count:0,conv:0,hours:0};map[k].count++;let sum=0;for(let d=1;d<=total;d++)sum+=calcHours(getRecord(s.id,ym,d),s);map[k].hours+=sum;map[k].conv+=base?sum/base:0});
+  let jh='<tr><th class="left">職種</th><th>人数</th><th>合計時間</th><th>常勤換算合計</th></tr>';let jb='';Object.entries(map).forEach(([k,v])=>{jb+=`<tr><td class="left">${escapeHtml(k)}</td><td>${v.count}</td><td>${fmtH(v.hours)}</td><td>${v.conv.toFixed(2)}</td></tr>`});
+  $('jobTable').innerHTML=jh+(jb||'<tr><td colspan="4" class="muted">データなし</td></tr>');
+}
+$('csvBtn').addEventListener('click',()=>{
+  const ym=currentMonth();const total=daysInMonth(ym);const base=(state.settings.weekly||40)*(state.settings.weeks||4);
+  let rows=[['事業所名',state.settings.facility||''],['サービス種類',state.settings.service||''],['対象月',ym],[]];
+  let head=['氏名','職種','資格','勤務形態'];for(let d=1;d<=total;d++)head.push(d+'日');head.push('合計時間','勤務日数','週平均','常勤換算');rows.push(head);
+  state.staff.forEach(s=>{let sum=0,days=0;let r=[s.name,s.job||'',s.qual||'',s.type];for(let d=1;d<=total;d++){const rec=getRecord(s.id,ym,d);const h=calcHours(rec,s);sum+=h;if(rec&&(rec.status==='work'||rec.status==='paid'))days++;r.push(rec? (rec.status==='work'?fmtH(h):rec.status==='paid'?'有給':rec.status==='absent'?'欠勤':''): '')}r.push(fmtH(sum),days,fmtH(sum/(state.settings.weeks||4)),(base?sum/base:0).toFixed(2));rows.push(r)});
+  const csv='\uFEFF'+rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  download(csv,'勤務形態一覧表_'+ym+'.csv','text/csv');
+});
+function download(content,filename,type){const blob=new Blob([content],{type});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}
+function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+
+// Settings
+function renderSettings(){$('setFacility').value=state.settings.facility||'';$('setService').value=state.settings.service||'';$('setWeekly').value=state.settings.weekly||40;$('setWeeks').value=state.settings.weeks||4;$('setStartPunch').checked=state.settings.startPunch!==false}
+$('setStartPunch').addEventListener('change',()=>{state.settings.startPunch=$('setStartPunch').checked;save()});
+$('saveSettingsBtn').addEventListener('click',()=>{state.settings.facility=$('setFacility').value.trim();state.settings.service=$('setService').value.trim();state.settings.weekly=Number($('setWeekly').value||40);state.settings.weeks=Number($('setWeeks').value||4);save();$('saveMsg').innerHTML='<div class="success" style="margin-top:10px">保存しました</div>'});
+$('exportJsonBtn').addEventListener('click',()=>{download(JSON.stringify(state,null,2),'勤怠バックアップ_'+new Date().toISOString().slice(0,10)+'.json','application/json')});
+$('importBtn').addEventListener('click',()=>{const f=$('importFile').files[0];if(!f){alert('ファイルを選んでください');return}const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!d.staff||!d.settings)throw 0;state=d;save();renderHeader();renderSettings();renderInput();renderStaff();alert('復元しました')}catch(e){alert('読み込めませんでした')}};r.readAsText(f)});
+$('clearBtn').addEventListener('click',()=>{if(!confirm('本当にすべて削除しますか？'))return;if(!confirm('バックアップは取りましたか？削除すると戻せません。'))return;localStorage.removeItem(KEY);state=load();save();renderHeader();renderInput();renderStaff();renderSettings();alert('削除しました')});
+
+/* === REFLECT CORE START === */
+// 様式Excel反映のコア処理。JSZip（グローバル）と DOMParser / XMLSerializer のみに依存する。
+// 書き込みはブックのZIP内XMLを対象シートだけ書き換える方式のため、対象セル以外の
+// セル・数式・書式・コメント等はそのまま保持される。
+const REFLECT_NS='http://schemas.openxmlformats.org/spreadsheetml/2006/main';
+function reflectColName(idx){let s='';while(idx>0){const m=(idx-1)%26;s=String.fromCharCode(65+m)+s;idx=Math.floor((idx-1)/26)}return s}
+function reflectColIndex(letters){let n=0;for(let i=0;i<letters.length;i++)n=n*26+(letters.charCodeAt(i)-64);return n}
+function reflectSheetBase(name){
+  let s=String(name||'');
+  s=s.replace(/^[^ぁ-んァ-ヶ一-龯々]+/,''); // 先頭の番号記号・数字などを除く
+  s=s.replace(/[（(]済[）)]\s*$/,'');
+  s=s.replace(/済\s*$/,'');
+  return s.trim();
+}
+function reflectSuggestSheet(staffName,sheetNames){
+  const target=String(staffName||'').replace(/\s+/g,'');
+  if(!target)return '';
+  for(let i=0;i<sheetNames.length;i++){
+    const base=reflectSheetBase(sheetNames[i]).replace(/\s+/g,'');
+    if(base&&target.indexOf(base)>=0)return sheetNames[i];
+  }
+  return '';
+}
+function reflectParseSheets(wbDoc,relsDoc){
+  const relMap={};
+  const rels=relsDoc.getElementsByTagName('Relationship');
+  for(let i=0;i<rels.length;i++){
+    const t=rels[i].getAttribute('Type')||'';
+    if(/\/worksheet$/.test(t)){
+      let target=rels[i].getAttribute('Target')||'';
+      target=target.replace(/^\//,'');
+      if(!/^xl\//.test(target))target='xl/'+target;
+      relMap[rels[i].getAttribute('Id')]=target;
+    }
+  }
+  const out=[];const sheetEls=wbDoc.getElementsByTagName('sheet');
+  for(let i=0;i<sheetEls.length;i++){
+    const name=sheetEls[i].getAttribute('name');
+    const rid=sheetEls[i].getAttribute('r:id');
+    if(name&&relMap[rid])out.push({name:name,path:relMap[rid]});
+  }
+  return out;
+}
+async function reflectListSheets(zip){
+  const wbFile=zip.file('xl/workbook.xml');
+  const relsFile=zip.file('xl/_rels/workbook.xml.rels');
+  if(!wbFile||!relsFile)throw new Error('様式ファイルの構成を確認できませんでした');
+  const parser=new DOMParser();
+  const wbDoc=parser.parseFromString(await wbFile.async('string'),'text/xml');
+  const relsDoc=parser.parseFromString(await relsFile.async('string'),'text/xml');
+  return reflectParseSheets(wbDoc,relsDoc).map(function(s){return s.name});
+}
+function reflectBuildJobs(state,ym,mapping){
+  const parts=ym.split('-').map(Number);const y=parts[0],m=parts[1];
+  const dim=new Date(y,m,0).getDate();
+  const jobs=[];
+  state.staff.forEach(function(s){
+    const sheetName=mapping[s.id];
+    if(!sheetName)return;
+    const days={};let paid=0;
+    for(let d=1;d<=dim;d++){
+      const k=ym+'-'+String(d).padStart(2,'0');
+      const rec=(state.records[s.id]||{})[k]||null;
+      if(rec&&rec.status==='work'){
+        days[d]={kind:'work',start:rec.start||s.stdStart,end:rec.end||s.stdEnd,brk:(rec.breakMin!=null?rec.breakMin:(s.stdBreak||0))};
+      }else{
+        days[d]={kind:'clear'};
+        if(rec&&rec.status==='paid')paid++;
+      }
+    }
+    jobs.push({staffId:s.id,staffName:s.name,sheetName:sheetName,year:y,month:m,days:days,paidCount:paid,daysInMonth:dim});
+  });
+  return jobs;
+}
+function reflectFindRow(doc,n){
+  const rows=doc.getElementsByTagName('row');
+  for(let i=0;i<rows.length;i++)if(Number(rows[i].getAttribute('r'))===n)return rows[i];
+  return null;
+}
+function reflectCellNumber(cell,shared){
+  if(!cell)return null;
+  const vs=cell.getElementsByTagName('v');
+  if(!vs.length)return null;
+  const raw=vs[0].textContent;
+  if(cell.getAttribute('t')==='s'&&shared){
+    const num=parseFloat(shared[Number(raw)]);
+    return isNaN(num)?null:num;
+  }
+  const num=parseFloat(raw);
+  return isNaN(num)?null:num;
+}
+function reflectReadYearMonth(doc,shared){
+  const row=reflectFindRow(doc,2);
+  if(!row)return null;
+  let a2=null,b2=null;
+  const cells=row.getElementsByTagName('c');
+  for(let i=0;i<cells.length;i++){
+    if(cells[i].getAttribute('r')==='A2')a2=cells[i];
+    if(cells[i].getAttribute('r')==='B2')b2=cells[i];
+  }
+  const y=reflectCellNumber(a2,shared);
+  const m=reflectCellNumber(b2,shared);
+  if(y==null||m==null)return null;
+  return {year:y,month:m};
+}
+function reflectRemoveValue(cell){
+  for(let i=cell.childNodes.length-1;i>=0;i--){
+    const n=cell.childNodes[i];
+    if(n.nodeType===1&&(n.tagName==='v'||n.tagName==='f'||n.tagName==='is'))cell.removeChild(n);
+  }
+  cell.removeAttribute('t');
+}
+function reflectSetNumber(cell,doc,val){
+  reflectRemoveValue(cell);
+  const v=doc.createElementNS(REFLECT_NS,'v');
+  v.textContent=String(Math.round(val*1e10)/1e10);
+  cell.appendChild(v);
+}
+function reflectGetCell(rowEl,doc,ref){
+  const cells=rowEl.getElementsByTagName('c');
+  for(let i=0;i<cells.length;i++)if(cells[i].getAttribute('r')===ref)return cells[i];
+  const col=reflectColIndex(ref.replace(/[0-9]/g,''));
+  const cell=doc.createElementNS(REFLECT_NS,'c');
+  cell.setAttribute('r',ref);
+  let inserted=false;
+  for(let i=0;i<cells.length;i++){
+    if(!cell.getAttribute('s')&&cells[i].getAttribute('s'))cell.setAttribute('s',cells[i].getAttribute('s'));
+    if(reflectColIndex((cells[i].getAttribute('r')||'').replace(/[0-9]/g,''))>col){
+      rowEl.insertBefore(cell,cells[i]);inserted=true;break;
+    }
+  }
+  if(!inserted){
+    if(cells.length&&!cell.getAttribute('s')&&cells[cells.length-1].getAttribute('s'))cell.setAttribute('s',cells[cells.length-1].getAttribute('s'));
+    rowEl.appendChild(cell);
+  }
+  return cell;
+}
+function reflectTimeSerial(t){
+  if(!t)return null;
+  const p=String(t).split(':');
+  if(p.length<2)return null;
+  const mins=Number(p[0])*60+Number(p[1]);
+  return isNaN(mins)?null:mins/1440;
+}
+function reflectWriteJob(doc,job){
+  const r5=reflectFindRow(doc,5),r6=reflectFindRow(doc,6),r7=reflectFindRow(doc,7),r13=reflectFindRow(doc,13);
+  if(!r5||!r6||!r7||!r13)return false;
+  for(let d=1;d<=job.daysInMonth;d++){
+    const col=reflectColName(d+2);
+    const info=job.days[d];
+    const c5=reflectGetCell(r5,doc,col+'5');
+    const c6=reflectGetCell(r6,doc,col+'6');
+    const c7=reflectGetCell(r7,doc,col+'7');
+    if(info&&info.kind==='work'){
+      const s=reflectTimeSerial(info.start),e=reflectTimeSerial(info.end);
+      if(s!=null)reflectSetNumber(c5,doc,s);else reflectRemoveValue(c5);
+      if(e!=null)reflectSetNumber(c6,doc,e);else reflectRemoveValue(c6);
+      if(info.brk&&info.brk>0)reflectSetNumber(c7,doc,info.brk/1440);else reflectRemoveValue(c7);
+    }else{
+      reflectRemoveValue(c5);reflectRemoveValue(c6);reflectRemoveValue(c7);
+    }
+  }
+  // 有給日数の入力セルは H13（F13:G13 は結合されたラベル。H14〜H16 が F14〜F16 の値セルであるのと同形式）
+  const h13=reflectGetCell(r13,doc,'H13');
+  reflectSetNumber(h13,doc,job.paidCount);
+  return true;
+}
+async function reflectApply(buf,jobs){
+  const zip=await JSZip.loadAsync(buf);
+  const parser=new DOMParser();
+  const wbFile=zip.file('xl/workbook.xml');
+  const relsFile=zip.file('xl/_rels/workbook.xml.rels');
+  if(!wbFile||!relsFile)throw new Error('様式ファイルの構成を確認できませんでした');
+  const wbDoc=parser.parseFromString(await wbFile.async('string'),'text/xml');
+  const relsDoc=parser.parseFromString(await relsFile.async('string'),'text/xml');
+  const sheets=reflectParseSheets(wbDoc,relsDoc);
+  let shared=null;
+  const ssFile=zip.file('xl/sharedStrings.xml');
+  if(ssFile){
+    const ssDoc=parser.parseFromString(await ssFile.async('string'),'text/xml');
+    shared=[];
+    const sis=ssDoc.getElementsByTagName('si');
+    for(let i=0;i<sis.length;i++){
+      const ts=sis[i].getElementsByTagName('t');
+      let s='';
+      for(let j=0;j<ts.length;j++)s+=ts[j].textContent;
+      shared.push(s);
+    }
+  }
+  const results=[];
+  const byPath={};
+  jobs.forEach(function(job){
+    let sh=null;
+    for(let i=0;i<sheets.length;i++)if(sheets[i].name===job.sheetName)sh=sheets[i];
+    if(!sh){results.push({staffName:job.staffName,sheetName:job.sheetName,status:'skip',reason:'シートが見つかりません'});return}
+    if(!byPath[sh.path])byPath[sh.path]={jobs:[]};
+    byPath[sh.path].jobs.push(job);
+  });
+  const paths=Object.keys(byPath);
+  for(let pi=0;pi<paths.length;pi++){
+    const path=paths[pi];
+    const file=zip.file(path);
+    if(!file){byPath[path].jobs.forEach(function(job){results.push({staffName:job.staffName,sheetName:job.sheetName,status:'skip',reason:'シートを読み込めませんでした'})});continue}
+    const doc=parser.parseFromString(await file.async('string'),'text/xml');
+    let dirty=false;
+    for(let ji=0;ji<byPath[path].jobs.length;ji++){
+      const job=byPath[path].jobs[ji];
+      const sheetYM=reflectReadYearMonth(doc,shared);
+      if(!sheetYM||sheetYM.year!==job.year||sheetYM.month!==job.month){
+        results.push({staffName:job.staffName,sheetName:job.sheetName,status:'skip',reason:'個人シートの年月（'+(sheetYM?sheetYM.year+'年'+sheetYM.month+'月':'不明')+'）がアプリの対象月（'+job.year+'年'+job.month+'月）と一致しません'});
+        continue;
+      }
+      if(!reflectWriteJob(doc,job)){
+        results.push({staffName:job.staffName,sheetName:job.sheetName,status:'skip',reason:'個人シートの形式が想定と異なります'});
+        continue;
+      }
+      dirty=true;
+      results.push({staffName:job.staffName,sheetName:job.sheetName,status:'ok',reason:''});
+    }
+    if(dirty)zip.file(path,new XMLSerializer().serializeToString(doc));
+  }
+  const uint8=await zip.generateAsync({type:'uint8array',compression:'DEFLATE'});
+  return {uint8:uint8,results:results};
+}
+
+/* ===== 書類出力（賃金台帳・給与明細）追加コア =====
+   台帳連携の対応表（連携済み職員の実例を全数調査して確定）：
+   - 台帳の列は「支給月」列（C=1月分 … N=12月分）。勤務月の翌月の列に書く（翌月支給）。
+   - 個人シートの集計ブロック先頭行を T（A列=年・B列=月の行）として：
+       台帳 5行 労働日数      ← B(T+11) 総勤務日数
+       台帳 6行 労働時間数    ← B(T+12) 総勤務時間（時間表示）
+       台帳10行 基本給        ← B(T+13) 総勤務時間（数値）× P(T+11) 時給
+                                （時給欄が無いブロックは、総支給額 G(T+15) の数式内で
+                                  B(T+13) に掛けられている単価リテラルを使う）
+       台帳12行 手当（交通費） ← B(T+14) 交通費
+       台帳25行 雇用保険料    ← H(T+12) 雇用保険
+       台帳26行 市町村民税    ← H(T+13) 住民税
+       台帳27行 所得税        ← H(T+14) 所得税
+       台帳32行 差引支給額    ← ROUND(ROUND(G(T+15),8),0) 総支給額
+   - 台帳19/22/30行（小計・合計・控除額合計）は、その台帳シート内で既存の数式パターンが
+     一意に定まる場合だけ、空セルに同じ形のSUM数式を補う（壊れた数式は真似しない）。
+   - 上記以外の行（休日労働・早出残業・深夜・割増・健康保険・厚生年金・賞与など）は
+     個人シートに対応する集計が無い／連携実例が無いため触らない。
+   - アプリは金額を計算しない。台帳へは参照式を書き、計算はExcel側の数式に任せる。
+     給与明細の金額は、個人シート集計部の保存値（キャッシュ値・入力値）を読み取るだけにする。 */
+// 一部のシートは名前空間プレフィックス付き（<x:row> 等）で保存されているため、
+// 追加コアではタグ名ではなく localName で要素を探す（既存コアの挙動は変えない）。
+function reflectLocalName(el){return el.localName||(el.tagName||'').replace(/^[^:]*:/,'')}
+function reflectElsByTag(el,name){
+  const out=[];
+  const all=el.getElementsByTagName('*');
+  for(let i=0;i<all.length;i++)if(reflectLocalName(all[i])===name)out.push(all[i]);
+  return out;
+}
+function reflectPrefixOf(el){
+  const t=el.tagName||'';
+  const i=t.indexOf(':');
+  return i>=0?t.slice(0,i+1):'';
+}
+function reflectFindRowNs(doc,n){
+  const rows=reflectElsByTag(doc,'row');
+  for(let i=0;i<rows.length;i++)if(Number(rows[i].getAttribute('r'))===n)return rows[i];
+  return null;
+}
+function reflectCellValueNumber(cell,shared){
+  if(!cell)return null;
+  const vs=reflectElsByTag(cell,'v');
+  if(!vs.length)return null;
+  const raw=vs[0].textContent;
+  if(cell.getAttribute('t')==='s'&&shared){
+    const num=parseFloat(shared[Number(raw)]);
+    return isNaN(num)?null:num;
+  }
+  const num=parseFloat(raw);
+  return isNaN(num)?null:num;
+}
+function reflectRowCellMap(rowEl){
+  const out={};
+  if(!rowEl)return out;
+  const cs=reflectElsByTag(rowEl,'c');
+  for(let i=0;i<cs.length;i++)out[cs[i].getAttribute('r')]=cs[i];
+  return out;
+}
+function reflectCellInfo(cell,shared){
+  if(!cell)return {kind:'empty',value:null,formula:null};
+  const fs=reflectElsByTag(cell,'f');
+  const vs=reflectElsByTag(cell,'v');
+  if(fs.length){
+    return {kind:'formula',value:vs.length?reflectCellValueNumber(cell,shared):null,formula:fs[0].textContent};
+  }
+  if(!vs.length){
+    const iss=reflectElsByTag(cell,'is');
+    if(iss.length)return {kind:'string',value:iss[0].textContent,formula:null};
+    return {kind:'empty',value:null,formula:null};
+  }
+  const t=cell.getAttribute('t');
+  if(t==='s'&&shared){
+    const sv=shared[Number(vs[0].textContent)];
+    return {kind:'string',value:sv!=null?sv:'',formula:null};
+  }
+  if(t==='str'||t==='e')return {kind:'string',value:vs[0].textContent,formula:null};
+  const num=parseFloat(vs[0].textContent);
+  return isNaN(num)?{kind:'string',value:vs[0].textContent,formula:null}:{kind:'number',value:num,formula:null};
+}
+function reflectCellNumeric(info){
+  if(!info)return null;
+  if(info.kind==='number')return info.value;
+  if(info.kind==='formula'&&typeof info.value==='number')return info.value;
+  return null;
+}
+function reflectFindBlockTop(doc,shared,year,month){
+  const rows=reflectElsByTag(doc,'row');
+  for(let i=0;i<rows.length;i++){
+    const r=Number(rows[i].getAttribute('r'));
+    if(!r)continue;
+    const cells=reflectRowCellMap(rows[i]);
+    const a=reflectCellInfo(cells['A'+r],shared);
+    if(a.kind!=='number'||a.value!==year)continue;
+    const b=reflectCellInfo(cells['B'+r],shared);
+    if(b.kind==='number'&&b.value===month)return r;
+  }
+  return null;
+}
+function reflectBlockCellInfo(doc,shared,T,col,rowOff){
+  const row=reflectFindRowNs(doc,T+rowOff);
+  if(!row)return {kind:'empty',value:null,formula:null};
+  const cells=reflectRowCellMap(row);
+  return reflectCellInfo(cells[col+(T+rowOff)],shared);
+}
+function reflectQuoteSheet(name){return "'"+String(name).replace(/'/g,"''")+"'"}
+function reflectLedgerSheetName(personalName,sheetNames){
+  const base=reflectSheetBase(personalName);
+  if(!base)return '';
+  const prefixMatches=[];
+  for(let i=0;i<sheetNames.length;i++){
+    const n=sheetNames[i];
+    if(n.indexOf('台帳_')!==0)continue;
+    const lb=n.slice(3);
+    if(lb===base)return n;
+    if(lb&&(base.indexOf(lb)===0||lb.indexOf(base)===0))prefixMatches.push(n);
+  }
+  return prefixMatches.length===1?prefixMatches[0]:'';
+}
+function reflectRemoveValueNs(cell){
+  for(let i=cell.childNodes.length-1;i>=0;i--){
+    const n=cell.childNodes[i];
+    if(n.nodeType===1){
+      const ln=reflectLocalName(n);
+      if(ln==='v'||ln==='f'||ln==='is')cell.removeChild(n);
+    }
+  }
+  cell.removeAttribute('t');
+}
+function reflectSetNumberNs(cell,doc,val){
+  reflectRemoveValueNs(cell);
+  const v=doc.createElementNS(REFLECT_NS,reflectPrefixOf(cell)+'v');
+  v.textContent=String(Math.round(val*1e10)/1e10);
+  cell.appendChild(v);
+}
+function reflectSetFormulaNs(cell,doc,formula){
+  reflectRemoveValueNs(cell);
+  const f=doc.createElementNS(REFLECT_NS,reflectPrefixOf(cell)+'f');
+  f.textContent=formula;
+  cell.appendChild(f);
+}
+function reflectGetCellNs(rowEl,doc,ref){
+  const cells=reflectElsByTag(rowEl,'c');
+  for(let i=0;i<cells.length;i++)if(cells[i].getAttribute('r')===ref)return cells[i];
+  const col=reflectColIndex(ref.replace(/[0-9]/g,''));
+  const cell=doc.createElementNS(REFLECT_NS,reflectPrefixOf(rowEl)+'c');
+  cell.setAttribute('r',ref);
+  let inserted=false;
+  for(let i=0;i<cells.length;i++){
+    if(!cell.getAttribute('s')&&cells[i].getAttribute('s'))cell.setAttribute('s',cells[i].getAttribute('s'));
+    if(reflectColIndex((cells[i].getAttribute('r')||'').replace(/[0-9]/g,''))>col){
+      rowEl.insertBefore(cell,cells[i]);inserted=true;break;
+    }
+  }
+  if(!inserted){
+    if(cells.length&&!cell.getAttribute('s')&&cells[cells.length-1].getAttribute('s'))cell.setAttribute('s',cells[cells.length-1].getAttribute('s'));
+    rowEl.appendChild(cell);
+  }
+  return cell;
+}
+function reflectWriteBlock(doc,job,T){
+  const rS=reflectFindRowNs(doc,T+3),rE=reflectFindRowNs(doc,T+4),rB=reflectFindRowNs(doc,T+5),rSum=reflectFindRowNs(doc,T+11);
+  if(!rS||!rE||!rB||!rSum)return false;
+  for(let d=1;d<=job.daysInMonth;d++){
+    const col=reflectColName(d+2);
+    const info=job.days[d];
+    const cS=reflectGetCellNs(rS,doc,col+(T+3));
+    const cE=reflectGetCellNs(rE,doc,col+(T+4));
+    const cB=reflectGetCellNs(rB,doc,col+(T+5));
+    if(info&&info.kind==='work'){
+      const s=reflectTimeSerial(info.start),e=reflectTimeSerial(info.end);
+      if(s!=null)reflectSetNumberNs(cS,doc,s);else reflectRemoveValueNs(cS);
+      if(e!=null)reflectSetNumberNs(cE,doc,e);else reflectRemoveValueNs(cE);
+      if(info.brk&&info.brk>0)reflectSetNumberNs(cB,doc,info.brk/1440);else reflectRemoveValueNs(cB);
+    }else{
+      reflectRemoveValueNs(cS);reflectRemoveValueNs(cE);reflectRemoveValueNs(cB);
+    }
+  }
+  const h=reflectGetCellNs(rSum,doc,'H'+(T+11));
+  reflectSetNumberNs(h,doc,job.paidCount);
+  return true;
+}
+function ledgerSumPattern(doc,rowNum,colLetter){
+  const row=reflectFindRowNs(doc,rowNum);
+  if(!row)return null;
+  const cells=reflectRowCellMap(row);
+  const pats={};
+  const refs=Object.keys(cells);
+  for(let i=0;i<refs.length;i++){
+    const info=reflectCellInfo(cells[refs[i]],null);
+    if(info.kind!=='formula'||!info.formula)continue;
+    const col=refs[i].replace(/[0-9]/g,'');
+    if(!col)continue;
+    const colIdx=reflectColIndex(col);
+    if(colIdx<3||colIdx>14)continue; // 月列（C〜N）だけを対象にする（O列は年間合計の横集計で形が違う）
+
+    const norm=info.formula.split(col).join('@');
+    if(norm.indexOf('SUX')>=0||norm.indexOf('#')>=0)continue;
+    pats[norm]=true;
+  }
+  const keys=Object.keys(pats);
+  if(keys.length!==1)return null;
+  return keys[0].split('@').join(colLetter);
+}
+async function reflectLoadBook(zip){
+  const parser=new DOMParser();
+  const wbFile=zip.file('xl/workbook.xml');
+  const relsFile=zip.file('xl/_rels/workbook.xml.rels');
+  if(!wbFile||!relsFile)throw new Error('様式ファイルの構成を確認できませんでした');
+  const wbDoc=parser.parseFromString(await wbFile.async('string'),'text/xml');
+  const relsDoc=parser.parseFromString(await relsFile.async('string'),'text/xml');
+  const sheets=reflectParseSheets(wbDoc,relsDoc);
+  let shared=null;
+  const ssFile=zip.file('xl/sharedStrings.xml');
+  if(ssFile){
+    const ssDoc=parser.parseFromString(await ssFile.async('string'),'text/xml');
+    shared=[];
+    const sis=ssDoc.getElementsByTagName('si');
+    for(let i=0;i<sis.length;i++){
+      const ts=sis[i].getElementsByTagName('t');
+      let s='';
+      for(let j=0;j<ts.length;j++)s+=ts[j].textContent;
+      shared.push(s);
+    }
+  }
+  return {sheets:sheets,shared:shared,parser:parser};
+}
+// 賃金台帳の作成：個人シートの対象月ブロックへ勤怠を反映し、台帳の翌月支給列へ参照式を書く。
+// 台帳に値が入っているセルは overwrite=false の間は書き換えず、needsConfirm で呼び出し側に返す。
+async function ledgerApply(buf,jobs,overwrite){
+  const zip=await JSZip.loadAsync(buf);
+  const book=await reflectLoadBook(zip);
+  const sheets=book.sheets,shared=book.shared,parser=book.parser;
+  const sheetNames=sheets.map(function(s){return s.name});
+  const pathOf={};
+  sheets.forEach(function(s){pathOf[s.name]=s.path});
+  const docCache={};
+  async function getDoc(path){
+    if(!path)return null;
+    if(!docCache[path]){
+      const f=zip.file(path);
+      if(!f)return null;
+      docCache[path]={doc:parser.parseFromString(await f.async('string'),'text/xml'),dirty:false};
+    }
+    return docCache[path];
+  }
+  const results=[];const needsConfirm=[];const plans=[];
+  for(let ji=0;ji<jobs.length;ji++){
+    const job=jobs[ji];
+    const base={staffName:job.staffName,sheetName:job.sheetName,ledgerName:'',status:'skip',reason:'',written:[],notes:[]};
+    if(job.month===12){base.reason='12月勤務分は翌年の賃金台帳に記入されるため、このファイルでは作成できません';results.push(base);continue}
+    const psEntry=await getDoc(pathOf[job.sheetName]);
+    if(!psEntry){base.reason='個人シートが見つかりません';results.push(base);continue}
+    const T=reflectFindBlockTop(psEntry.doc,shared,job.year,job.month);
+    if(T==null){base.reason='個人シートに対象月（'+job.year+'年'+job.month+'月）の記入欄がありません';results.push(base);continue}
+    const ledgerName=reflectLedgerSheetName(job.sheetName,sheetNames);
+    base.ledgerName=ledgerName;
+    if(!ledgerName){base.reason='対応する賃金台帳シートが見つかりません';results.push(base);continue}
+    const lgEntry=await getDoc(pathOf[ledgerName]);
+    if(!lgEntry){base.reason='賃金台帳シートを読み込めませんでした';results.push(base);continue}
+    const colLetter=reflectColName(job.month+3);
+    const headRow=reflectFindRowNs(lgEntry.doc,4);
+    const headInfo=headRow?reflectCellInfo(reflectRowCellMap(headRow)[colLetter+'4'],shared):{kind:'empty'};
+    if(headInfo.kind!=='string'||headInfo.value!==String(job.month+1)+'月分'){
+      base.reason='台帳の列見出し（'+(job.month+1)+'月分）が確認できません';results.push(base);continue;
+    }
+    const q=reflectQuoteSheet(job.sheetName);
+    let wageFormula=null;
+    const pInfo=reflectBlockCellInfo(psEntry.doc,shared,T,'P',11);
+    if(reflectCellNumeric(pInfo)!=null){
+      wageFormula=q+'!B'+(T+13)+'*'+q+'!P'+(T+11);
+    }else{
+      const gInfo=reflectBlockCellInfo(psEntry.doc,shared,T,'G',15);
+      if(gInfo.kind==='formula'&&gInfo.formula){
+        const mm=gInfo.formula.match(new RegExp('B'+(T+13)+'\\s*\\*\\s*([0-9]+(?:\\.[0-9]+)?)'));
+        if(mm)wageFormula=q+'!B'+(T+13)+'*'+mm[1];
+      }
+    }
+    const defs=[
+      {row:5,label:'労働日数',formula:q+'!B'+(T+11)},
+      {row:6,label:'労働時間数',formula:q+'!B'+(T+12)},
+      {row:10,label:'基本給',formula:wageFormula},
+      {row:12,label:'交通費',formula:q+'!B'+(T+14)},
+      {row:25,label:'雇用保険料',formula:q+'!H'+(T+12)},
+      {row:26,label:'住民税',formula:q+'!H'+(T+13)},
+      {row:27,label:'所得税',formula:q+'!H'+(T+14)},
+      {row:32,label:'差引支給額',formula:'ROUND(ROUND('+q+'!G'+(T+15)+',8),0)'}
+    ];
+    [19,22,30].forEach(function(rn){
+      const f=ledgerSumPattern(lgEntry.doc,rn,colLetter);
+      if(f)defs.push({row:rn,label:rn===19?'小計':(rn===22?'合計':'控除額合計'),formula:f});
+    });
+    const writes=[];
+    for(let di=0;di<defs.length;di++){
+      const def=defs[di];
+      if(!def.formula){base.notes.push(def.label+'は時給が確認できないため未記入');continue}
+      const rowEl=reflectFindRowNs(lgEntry.doc,def.row);
+      if(!rowEl){base.notes.push(def.label+'の行が台帳にありません');continue}
+      const cell=reflectRowCellMap(rowEl)[colLetter+def.row];
+      const info=reflectCellInfo(cell,shared);
+      if(info.kind==='formula'){base.notes.push(def.label+'は連携済み（数式あり）');continue}
+      if(info.kind!=='empty'){
+        writes.push({def:def,overwrite:true});
+        needsConfirm.push({staffName:job.staffName,ledgerName:ledgerName,cell:colLetter+def.row});
+        continue;
+      }
+      writes.push({def:def,overwrite:false});
+    }
+    plans.push({job:job,base:base,psEntry:psEntry,lgEntry:lgEntry,T:T,colLetter:colLetter,writes:writes});
+  }
+  if(needsConfirm.length&&!overwrite){
+    plans.forEach(function(p){p.base.status='confirm';p.base.reason='台帳に入力済みの値があります';results.push(p.base)});
+    return {uint8:null,results:results,needsConfirm:needsConfirm};
+  }
+  for(let pi=0;pi<plans.length;pi++){
+    const p=plans[pi];
+    if(!reflectWriteBlock(p.psEntry.doc,p.job,p.T)){
+      p.base.status='skip';p.base.reason='個人シートの形式が想定と異なります';results.push(p.base);continue;
+    }
+    p.psEntry.dirty=true;
+    for(let wi=0;wi<p.writes.length;wi++){
+      const w=p.writes[wi];
+      const rowEl=reflectFindRowNs(p.lgEntry.doc,w.def.row);
+      const cell=reflectGetCellNs(rowEl,p.lgEntry.doc,p.colLetter+w.def.row);
+      const nowInfo=reflectCellInfo(cell,shared);
+      if(nowInfo.kind==='formula'&&!w.overwrite){p.base.notes.push(w.def.label+'は連携済み（数式あり）');continue}
+      if(!cell.getAttribute('s')){
+        const cs=reflectElsByTag(rowEl,'c');
+        for(let ci=0;ci<cs.length;ci++){const sv=cs[ci].getAttribute('s');if(sv){cell.setAttribute('s',sv);break}}
+      }
+      reflectSetFormulaNs(cell,p.lgEntry.doc,w.def.formula);
+      p.lgEntry.dirty=true;
+      p.base.written.push(w.def.label);
+    }
+    p.base.status='ok';
+    results.push(p.base);
+  }
+  const paths=Object.keys(docCache);
+  for(let i=0;i<paths.length;i++){
+    if(docCache[paths[i]].dirty)zip.file(paths[i],new XMLSerializer().serializeToString(docCache[paths[i]].doc));
+  }
+  const uint8=await zip.generateAsync({type:'uint8array',compression:'DEFLATE'});
+  return {uint8:uint8,results:results,needsConfirm:[]};
+}
+function payslipTimeToMin(t){if(!t)return 0;const p=String(t).split(':');if(p.length<2)return 0;return Number(p[0])*60+Number(p[1])}
+function payslipBuildData(state,ym,mapping){
+  const parts=ym.split('-').map(Number);
+  const dim=new Date(parts[0],parts[1],0).getDate();
+  const items=[];
+  state.staff.forEach(function(s){
+    const sheetName=mapping[s.id];
+    if(!sheetName)return;
+    let workDays=0,workMin=0,paidDays=0;
+    for(let d=1;d<=dim;d++){
+      const k=ym+'-'+String(d).padStart(2,'0');
+      const rec=(state.records[s.id]||{})[k]||null;
+      if(!rec)continue;
+      if(rec.status==='work'){
+        workDays++;
+        workMin+=Math.max(0,payslipTimeToMin(rec.end||s.stdEnd)-payslipTimeToMin(rec.start||s.stdStart)-(rec.breakMin!=null?rec.breakMin:(s.stdBreak||0)));
+      }else if(rec.status==='paid')paidDays++;
+    }
+    items.push({staffId:s.id,staffName:s.name,sheetName:sheetName,year:parts[0],month:parts[1],workDays:workDays,workHours:Math.round(workMin/60*100)/100,paidDays:paidDays,amounts:null});
+  });
+  return items;
+}
+// 給与明細の金額読み取り：個人シート集計部の保存値（入力値・キャッシュ値）だけを読む。アプリでは再計算しない。
+async function payslipReadAmounts(buf,items){
+  const zip=await JSZip.loadAsync(buf);
+  const book=await reflectLoadBook(zip);
+  const pathOf={};
+  book.sheets.forEach(function(s){pathOf[s.name]=s.path});
+  const docCache={};
+  for(let ii=0;ii<items.length;ii++){
+    const it=items[ii];
+    const amt={blockFound:false,wage:null,wageFromFormula:false,basePay:null,transport:null,dedEmp:null,dedRes:null,dedInc:null,net:null};
+    it.amounts=amt;
+    const path=pathOf[it.sheetName];
+    if(!path)continue;
+    if(!docCache[path]){
+      const f=zip.file(path);
+      if(!f)continue;
+      docCache[path]=book.parser.parseFromString(await f.async('string'),'text/xml');
+    }
+    const doc=docCache[path];
+    const T=reflectFindBlockTop(doc,book.shared,it.year,it.month);
+    if(T==null)continue;
+    amt.blockFound=true;
+    let wage=reflectCellNumeric(reflectBlockCellInfo(doc,book.shared,T,'P',11));
+    if(wage==null){
+      const gForWage=reflectBlockCellInfo(doc,book.shared,T,'G',15);
+      if(gForWage.kind==='formula'&&gForWage.formula){
+        const mm=gForWage.formula.match(new RegExp('B'+(T+13)+'\\s*\\*\\s*([0-9]+(?:\\.[0-9]+)?)'));
+        if(mm){wage=parseFloat(mm[1]);amt.wageFromFormula=true}
+      }
+    }
+    amt.wage=wage;
+    const numHours=reflectCellNumeric(reflectBlockCellInfo(doc,book.shared,T,'B',13));
+    if(numHours!=null&&wage!=null)amt.basePay=Math.round(numHours*wage*1e8)/1e8;
+    amt.transport=reflectCellNumeric(reflectBlockCellInfo(doc,book.shared,T,'B',14));
+    const ded=function(off){
+      const info=reflectBlockCellInfo(doc,book.shared,T,'H',off);
+      const n=reflectCellNumeric(info);
+      if(n!=null)return n;
+      return info.kind==='empty'?0:null;
+    };
+    amt.dedEmp=ded(12);amt.dedRes=ded(13);amt.dedInc=ded(14);
+    amt.net=reflectCellNumeric(reflectBlockCellInfo(doc,book.shared,T,'G',15));
+  }
+  return items;
+}
+function payslipEscape(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function payslipCellXml(ref,val){
+  if(val==null||val==='')return '';
+  if(typeof val==='number')return '<c r="'+ref+'"><v>'+val+'</v></c>';
+  return '<c r="'+ref+'" t="inlineStr"><is><t xml:space="preserve">'+payslipEscape(val)+'</t></is></c>';
+}
+function payslipRowXml(r,cells){
+  const inner=cells.join('');
+  return inner?('<row r="'+r+'">'+inner+'</row>'):('<row r="'+r+'"/>');
+}
+function payslipSheetName(name,used){
+  let s=String(name||'明細').replace(/[\\\/\?\*\[\]:]/g,'＿');
+  if(!s)s='明細';
+  if(s.length>31)s=s.slice(0,31);
+  let cand=s,i=2;
+  while(used[cand]){cand=(s.slice(0,28)+'_'+(i++));if(cand.length>31)cand=cand.slice(0,31)}
+  used[cand]=true;
+  return cand;
+}
+async function payslipBuildWorkbook(items,ym){
+  const zip=new JSZip();
+  const used={};
+  const sheetNames=items.map(function(it){return payslipSheetName(it.staffName,used)});
+  const ymParts=String(ym||'').split('-');
+  const ymLabel=ymParts.length===2?(ymParts[0]+'年'+Number(ymParts[1])+'月'):'';
+  items.forEach(function(it,idx){
+    const a=it.amounts||{};
+    const NA='Excelで確認';
+    const rows=[];
+    const R=function(r,A,B,C){rows.push(payslipRowXml(r,[payslipCellXml('A'+r,A),payslipCellXml('B'+r,B),payslipCellXml('C'+r,C)]))};
+    R(1,'給与明細',null,null);
+    R(2,'氏名',it.staffName,null);
+    R(3,'対象月',ymLabel,null);
+    R(4,'労働日数',it.workDays,'日');
+    R(5,'労働時間数',it.workHours,'時間');
+    R(6,'有給日数',it.paidDays,'日');
+    R(7,'時給',a.wage!=null?a.wage:NA,'円');
+    R(8,'基本給',a.basePay!=null?a.basePay:NA,'円');
+    R(9,'交通費',a.transport!=null?a.transport:NA,'円');
+    R(10,'控除（雇用保険）',a.dedEmp!=null?a.dedEmp:NA,'円');
+    R(11,'控除（住民税）',a.dedRes!=null?a.dedRes:NA,'円');
+    R(12,'控除（所得税）',a.dedInc!=null?a.dedInc:NA,'円');
+    R(13,'差引支給額',a.net!=null?a.net:NA,'円');
+    let nr=15;
+    const note=function(text){rows.push(payslipRowXml(nr,[payslipCellXml('A'+nr,text)]));nr++};
+    note('※ 金額は様式ファイル（マスターExcel）に保存されている値です。Excelで開いて保存し直していない場合、前回の保存時点の金額が表示されます。「Excelで確認」と表示された項目は、様式ファイルの個人シートでご確認ください。');
+    note('※ 労働日数・労働時間数・有給日数は、このアプリの勤怠データから集計しています（労働時間数は出勤日の実労働時間で、有給分は含みません）。');
+    if(a.wageFromFormula)note('※ 時給は個人シートの時給欄が未入力のため、総支給額の計算式で使われている金額を表示しています。');
+    if(!a.blockFound)note('※ 個人シートに対象月の記入欄が見つからなかったため、金額は表示できていません。');
+    const xml='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>'+rows.join('')+'</sheetData></worksheet>';
+    zip.file('xl/worksheets/sheet'+(idx+1)+'.xml',xml);
+  });
+  let ct='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>';
+  items.forEach(function(it,idx){ct+='<Override PartName="/xl/worksheets/sheet'+(idx+1)+'.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'});
+  ct+='</Types>';
+  zip.file('[Content_Types].xml',ct);
+  zip.file('_rels/.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>');
+  let wb='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>';
+  sheetNames.forEach(function(n,idx){wb+='<sheet name="'+payslipEscape(n)+'" sheetId="'+(idx+1)+'" r:id="rId'+(idx+1)+'"/>'});
+  wb+='</sheets></workbook>';
+  zip.file('xl/workbook.xml',wb);
+  let rels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">';
+  items.forEach(function(it,idx){rels+='<Relationship Id="rId'+(idx+1)+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet'+(idx+1)+'.xml"/>'});
+  rels+='</Relationships>';
+  zip.file('xl/_rels/workbook.xml.rels',rels);
+  return await zip.generateAsync({type:'uint8array',compression:'DEFLATE'});
+}
+/* === REFLECT CORE END === */
+
+// 様式Excelへの反映（UI）
+const MAPKEY='kintai_standalone_sheetmap';
+let masterData=null;
+let zipLibPromise=null;
+function ensureZipLib(){
+  if(window.JSZip)return Promise.resolve();
+  if(zipLibPromise)return zipLibPromise;
+  const urls=['https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js','https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js'];
+  zipLibPromise=new Promise(function(resolve,reject){
+    let i=0;
+    const tryNext=function(){
+      if(i>=urls.length){reject(new Error('ライブラリを読み込めませんでした'));return}
+      const sc=document.createElement('script');
+      sc.src=urls[i++];
+      sc.onload=function(){if(window.JSZip)resolve();else tryNext()};
+      sc.onerror=tryNext;
+      document.head.appendChild(sc);
+    };
+    tryNext();
+  });
+  return zipLibPromise;
+}
+function loadSheetMap(){try{return JSON.parse(localStorage.getItem(MAPKEY))||{}}catch(e){return{}}}
+function saveSheetMap(m){try{localStorage.setItem(MAPKEY,JSON.stringify(m))}catch(e){}}
+function renderSheetMap(){
+  const area=$('sheetMapArea');
+  if(!masterData){area.innerHTML='';return}
+  if(!state.staff.length){area.innerHTML='<p class="muted" style="margin-top:10px">先に「職員」タブで職員を登録してください。</p>';return}
+  const saved=loadSheetMap();
+  let html='<h3>書き込み先の個人シート</h3><p class="muted">職員ごとに、反映先の個人シートを選んでください（自動で候補が入っています）。</p>';
+  state.staff.forEach(function(s){
+    const init=(saved[s.id]&&masterData.sheets.indexOf(saved[s.id])>=0)?saved[s.id]:reflectSuggestSheet(s.name,masterData.sheets);
+    html+='<label>'+escapeHtml(s.name)+'</label><select id="map-'+s.id+'"><option value="">（書き出さない）</option>'+masterData.sheets.map(function(n){return '<option value="'+escapeHtml(n)+'"'+(n===init?' selected':'')+'>'+escapeHtml(n)+'</option>'}).join('')+'</select>';
+  });
+  area.innerHTML=html;
+  state.staff.forEach(function(s){
+    const sel=$('map-'+s.id);
+    if(sel)sel.addEventListener('change',function(){const m=loadSheetMap();m[s.id]=sel.value;saveSheetMap(m)});
+  });
+}
+$('masterFile').addEventListener('change',async function(e){
+  const f=e.target.files[0];
+  if(!f)return;
+  try{
+    await ensureZipLib();
+    const buf=await f.arrayBuffer();
+    const zip=await JSZip.loadAsync(buf);
+    const sheets=await reflectListSheets(zip);
+    masterData={name:f.name,buf:buf,sheets:sheets};
+    $('masterInfo').innerHTML='<div class="success" style="margin-top:10px">様式ファイルを読み込みました（シート '+sheets.length+' 件）。職員ごとに書き込み先の個人シートを選んでください。</div>';
+    $('reflectResult').innerHTML='';
+    $('ledgerResult').innerHTML='';
+    $('payslipResult').innerHTML='';
+    renderSheetMap();
+    $('reflectBtn').classList.remove('hidden');
+    $('ledgerBtn').classList.remove('hidden');
+    $('payslipBtn').classList.remove('hidden');
+  }catch(err){
+    masterData=null;
+    $('masterInfo').innerHTML='<div class="notice" style="margin-top:10px">様式ファイルを読み込めませんでした。インターネット接続と、ファイルが .xlsx 形式であることを確認してください。</div>';
+    $('sheetMapArea').innerHTML='';
+    $('reflectBtn').classList.add('hidden');
+    $('ledgerBtn').classList.add('hidden');
+    $('payslipBtn').classList.add('hidden');
+  }
+});
+function getCurrentMapping(){
+  const mapping={};
+  state.staff.forEach(function(s){const sel=$('map-'+s.id);mapping[s.id]=sel?sel.value:''});
+  const saved=loadSheetMap();
+  Object.keys(mapping).forEach(function(k){saved[k]=mapping[k]});
+  saveSheetMap(saved);
+  return mapping;
+}
+$('reflectBtn').addEventListener('click',async function(){
+  if(!masterData){alert('先に様式ファイルを選択してください');return}
+  const mapping=getCurrentMapping();
+  const jobs=reflectBuildJobs(state,currentMonth(),mapping);
+  if(!jobs.length){alert('書き出し先のシートが割り当てられた職員がいません');return}
+  if(!confirm('対象月（'+currentMonth()+'）の個人シートの出勤・退勤・休憩は、アプリの内容で上書きされます。\n元のファイルは変更されず、新しいファイルがダウンロードされます。よろしいですか？'))return;
+  const btn=$('reflectBtn');
+  btn.disabled=true;btn.textContent='書き出し中…';
+  try{
+    await ensureZipLib();
+    const res=await reflectApply(masterData.buf,jobs);
+    const blob=new Blob([res.uint8],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+    download(blob,masterData.name.replace(/\.xlsx$/i,'')+'_反映済み.xlsx','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    const lines=res.results.map(function(r){
+      return r.status==='ok'
+        ?('✅ '+escapeHtml(r.staffName)+' → '+escapeHtml(r.sheetName)+'：反映しました')
+        :('⏭ '+escapeHtml(r.staffName)+' → '+escapeHtml(r.sheetName)+'：スキップ（'+escapeHtml(r.reason)+'）');
+    });
+    $('reflectResult').innerHTML='<div class="success" style="margin-top:10px">'+lines.join('<br>')+'</div>';
+  }catch(err){
+    $('reflectResult').innerHTML='<div class="notice" style="margin-top:10px">書き出しに失敗しました。インターネット接続を確認して、もう一度お試しください。</div>';
+  }finally{
+    btn.disabled=false;btn.textContent='勤務形態一覧表を作成';
+  }
+});
+$('ledgerBtn').addEventListener('click',async function(){
+  if(!masterData){alert('先に様式ファイルを選択してください');return}
+  const mapping=getCurrentMapping();
+  const jobs=reflectBuildJobs(state,currentMonth(),mapping);
+  if(!jobs.length){alert('書き出し先のシートが割り当てられた職員がいません');return}
+  const btn=$('ledgerBtn');
+  btn.disabled=true;btn.textContent='作成中…';
+  try{
+    await ensureZipLib();
+    let res=await ledgerApply(masterData.buf,jobs,false);
+    if(res.needsConfirm&&res.needsConfirm.length){
+      const total=res.needsConfirm.length;
+      const detail=res.needsConfirm.map(function(c){return c.staffName+'（'+c.ledgerName+' '+c.cell+'）'}).join('\n');
+      if(!confirm('賃金台帳にすでに入力されている値が '+total+' 件あります。個人シートへの参照式に置き換えると、金額はExcel側の計算に切り替わります。\n\n'+detail+'\n\n置き換えてよろしいですか？')){
+        $('ledgerResult').innerHTML='<div class="notice" style="margin-top:10px">賃金台帳の作成を中止しました（ファイルは変更されていません）。</div>';
+        return;
+      }
+      res=await ledgerApply(masterData.buf,jobs,true);
+    }
+    const blob=new Blob([res.uint8],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+    download(blob,masterData.name.replace(/\.xlsx$/i,'')+'_台帳反映済み.xlsx','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    const lines=res.results.map(function(r){
+      if(r.status==='ok'){
+        let line='✅ '+escapeHtml(r.staffName)+' → '+escapeHtml(r.ledgerName)+'：書き込みました（'+r.written.map(escapeHtml).join('・')+'）';
+        if(r.notes&&r.notes.length)line+='<br>　（'+r.notes.map(escapeHtml).join('／')+'）';
+        return line;
+      }
+      return '⏭ '+escapeHtml(r.staffName)+'：スキップ（'+escapeHtml(r.reason)+'）';
+    });
+    $('ledgerResult').innerHTML='<div class="success" style="margin-top:10px">'+lines.join('<br>')+'<br>※ 金額はExcelでファイルを開いたときに、個人シートの集計から自動計算されます。</div>';
+  }catch(err){
+    $('ledgerResult').innerHTML='<div class="notice" style="margin-top:10px">賃金台帳の作成に失敗しました。インターネット接続を確認して、もう一度お試しください。</div>';
+  }finally{
+    btn.disabled=false;btn.textContent='賃金台帳を作成';
+  }
+});
+$('payslipBtn').addEventListener('click',async function(){
+  if(!masterData){alert('先に様式ファイルを選択してください');return}
+  const mapping=getCurrentMapping();
+  const items=payslipBuildData(state,currentMonth(),mapping);
+  if(!items.length){alert('書き出し先のシートが割り当てられた職員がいません');return}
+  const btn=$('payslipBtn');
+  btn.disabled=true;btn.textContent='作成中…';
+  try{
+    await ensureZipLib();
+    const filled=await payslipReadAmounts(masterData.buf,items);
+    const uint8=await payslipBuildWorkbook(filled,currentMonth());
+    const blob=new Blob([uint8],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+    download(blob,'給与明細_'+currentMonth()+'.xlsx','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    const lines=filled.map(function(it){
+      const a=it.amounts||{};
+      const missing=[a.wage,a.basePay,a.transport,a.dedEmp,a.dedRes,a.dedInc,a.net].some(function(v){return v==null});
+      return '✅ '+escapeHtml(it.staffName)+'：給与明細を作成しました'+(missing?'（一部の金額は「Excelで確認」と表示しています）':'');
+    });
+    $('payslipResult').innerHTML='<div class="success" style="margin-top:10px">'+lines.join('<br>')+'<br>※ 金額は様式ファイルに保存されている値（Excelで最後に保存した時点の計算結果）です。最新の金額で作る場合は、先に「勤務形態一覧表を作成」で反映したファイルをExcelで開いて保存し直し、読み込み直してから作成してください。</div>';
+  }catch(err){
+    $('payslipResult').innerHTML='<div class="notice" style="margin-top:10px">給与明細の作成に失敗しました。インターネット接続を確認して、もう一度お試しください。</div>';
+  }finally{
+    btn.disabled=false;btn.textContent='給与明細を作成';
+  }
+});
+
+/* === PAYGEN CORE START === */
+// アプリ完結型の書類生成コア。給与計算は様式ファイルの個人シート集計部の方式に合わせる：
+// 基本給 = 実労働時間（出勤日の 退勤-出勤-休憩 の合計）× 時給（月給制は月額固定）
+// 交通費 = 自走KM合計 × 単価（km方式）/ 月額固定 / なし
+// 差引支給額 = 基本給 + 交通費 + 手当 - 控除（控除は登録した金額のみ。税率・保険料率の計算はしない）
+// 有給は日数の表示のみで金額には含まない（様式ファイルの計算と同じ扱い）。
+let adminAuthed=false;
+function adminPinSet(){return !!(state.settings&&state.settings.adminPin)}
+function adminIsLocked(){return adminPinSet()&&!adminAuthed}
+function payPinCheck(pin){return adminPinSet()&&String(pin)===String(state.settings.adminPin)}
+function payRoundYen(x){return x<0?-Math.round(-x):Math.round(x)}
+function payTimeToMin(t){if(!t)return 0;const p=String(t).split(':');if(p.length<2)return 0;return Number(p[0])*60+Number(p[1])}
+function payCalcMonth(st,staff,ym){
+  const pay=Object.assign(defaultPay(),staff.pay||{});
+  pay.transport=Object.assign({mode:'km',rate:null},pay.transport||{});
+  pay.deductions=Object.assign({health:0,pension:0,employment:0,resident:0,income:0,others:[]},pay.deductions||{});
+  const parts=ym.split('-').map(Number);const dim=new Date(parts[0],parts[1],0).getDate();
+  let workDays=0,workMin=0,paidDays=0,absentDays=0,kmTotal=0;
+  for(let d=1;d<=dim;d++){
+    const k=ym+'-'+String(d).padStart(2,'0');
+    const rec=(st.records[staff.id]||{})[k]||null;
+    if(!rec)continue;
+    if(rec.status==='work'){
+      const mins=Math.max(0,payTimeToMin(rec.end||staff.stdEnd)-payTimeToMin(rec.start||staff.stdStart)-(rec.breakMin!=null?rec.breakMin:(staff.stdBreak||0)));
+      workMin+=mins;if(mins>0)workDays++;
+      if(rec.km)kmTotal+=Number(rec.km)||0;
+    }else if(rec.status==='paid')paidDays++;
+    else if(rec.status==='absent')absentDays++;
+  }
+  const workHours=workMin/60;
+  const calcOk=!pay.payBlocked&&(pay.type==='monthly'?pay.monthlyBase!=null:pay.wage!=null);
+  const basePay=pay.type==='monthly'?(pay.monthlyBase||0):workHours*(pay.wage||0);
+  let transport=0;
+  if(pay.transport.mode==='km')transport=kmTotal*(pay.transport.rate||0);
+  else if(pay.transport.mode==='fixed')transport=pay.transport.rate||0;
+  const allowances=(pay.allowances||[]).map(a=>({name:a.name||'手当',amount:Number(a.amount)||0}));
+  const allowTotal=allowances.reduce((s,a)=>s+a.amount,0);
+  const ded=pay.deductions;
+  const deductions=[{name:'健康保険料',amount:Number(ded.health)||0},{name:'厚生年金保険料',amount:Number(ded.pension)||0},{name:'雇用保険料',amount:Number(ded.employment)||0},{name:'住民税',amount:Number(ded.resident)||0},{name:'所得税',amount:Number(ded.income)||0}].concat((ded.others||[]).map(a=>({name:a.name||'その他控除',amount:Number(a.amount)||0})));
+  const dedTotal=deductions.reduce((s,a)=>s+a.amount,0);
+  const gross=basePay+transport+allowTotal;
+  const net=gross-dedTotal;
+  return {ym:ym,workDays:workDays,workHours:workHours,paidDays:paidDays,absentDays:absentDays,kmTotal:kmTotal,basePay:basePay,transport:transport,allowances:allowances,allowTotal:allowTotal,deductions:deductions,dedTotal:dedTotal,gross:gross,net:net,netRounded:payRoundYen(net),calcOk:calcOk,pay:pay};
+}
+function recOf(st,sid,ym,d){const k=ym+'-'+String(d).padStart(2,'0');return (st.records[sid]||{})[k]||null}
+function C(v,s){return{v:v,s:s}}
+const XLSX_STYLES_XML='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><numFmts count="1"><numFmt numFmtId="164" formatCode="0.0"/></numFmts><fonts count="4"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="14"/><name val="Calibri"/></font><font><sz val="9"/><color rgb="FF808080"/><name val="Calibri"/></font></fonts><fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFD9E2F3"/><bgColor rgb="FFD9E2F3"/></patternFill></fill></fills><borders count="2"><border><left/><right/><top/><bottom/></border><border><left style="thin"><color rgb="FFB0B0B0"/></left><right style="thin"><color rgb="FFB0B0B0"/></right><top style="thin"><color rgb="FFB0B0B0"/></top><bottom style="thin"><color rgb="FFB0B0B0"/></bottom></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="11"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/><xf numFmtId="0" fontId="2" fillId="0" borderId="0"/><xf numFmtId="0" fontId="3" fillId="0" borderId="0"/><xf numFmtId="0" fontId="1" fillId="2" borderId="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf><xf numFmtId="0" fontId="0" fillId="0" borderId="1"/><xf numFmtId="0" fontId="1" fillId="0" borderId="1"/><xf numFmtId="3" fontId="0" fillId="0" borderId="1"/><xf numFmtId="3" fontId="1" fillId="0" borderId="1"/><xf numFmtId="2" fontId="0" fillId="0" borderId="1"/><xf numFmtId="164" fontId="0" fillId="0" borderId="1"/><xf numFmtId="0" fontId="0" fillId="0" borderId="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf></cellXfs></styleSheet>';
+// style index: 1=タイトル 2=注記 3=見出し 4=ラベル 5=ラベル太字 6=整数 7=整数太字 8=小数2桁 9=小数1桁 10=中央
+function xlsxCellXml(ref,cell){
+  if(!cell||cell.v==null||cell.v==='')return '';
+  const s=cell.s?(' s="'+cell.s+'"'):'';
+  if(typeof cell.v==='number')return '<c r="'+ref+'"'+s+'><v>'+cell.v+'</v></c>';
+  return '<c r="'+ref+'"'+s+' t="inlineStr"><is><t xml:space="preserve">'+payslipEscape(String(cell.v))+'</t></is></c>';
+}
+function xlsxSheetXml(sheet){
+  let cols='';
+  if(sheet.widths)sheet.widths.forEach((w,i)=>{cols+='<col min="'+(i+1)+'" max="'+(i+1)+'" width="'+w+'" customWidth="1"/>'});
+  let rowsXml='';
+  sheet.rows.forEach((row,ri)=>{
+    let cells='';
+    row.forEach((cell,ci)=>{cells+=xlsxCellXml(reflectColName(ci+1)+(ri+1),cell)});
+    rowsXml+='<row r="'+(ri+1)+'">'+cells+'</row>';
+  });
+  return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetPr><pageSetUpPr fitToPage="1"/></sheetPr><pageSetup orientation="'+(sheet.landscape?'landscape':'portrait')+'" fitToWidth="1" fitToHeight="0"/>'+(cols?'<cols>'+cols+'</cols>':'')+'<sheetData>'+rowsXml+'</sheetData></worksheet>';
+}
+async function buildStyledWorkbook(sheets){
+  const zip=new JSZip();
+  const used={};
+  const names=sheets.map(sh=>payslipSheetName(sh.name,used));
+  sheets.forEach((sh,idx)=>{zip.file('xl/worksheets/sheet'+(idx+1)+'.xml',xlsxSheetXml(sh))});
+  let ct='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>';
+  sheets.forEach((sh,idx)=>{ct+='<Override PartName="/xl/worksheets/sheet'+(idx+1)+'.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'});
+  ct+='</Types>';
+  zip.file('[Content_Types].xml',ct);
+  zip.file('_rels/.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>');
+  let wb='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>';
+  names.forEach((n,idx)=>{wb+='<sheet name="'+payslipEscape(n)+'" sheetId="'+(idx+1)+'" r:id="rId'+(idx+1)+'"/>'});
+  wb+='</sheets></workbook>';
+  zip.file('xl/workbook.xml',wb);
+  let rels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">';
+  sheets.forEach((sh,idx)=>{rels+='<Relationship Id="rId'+(idx+1)+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet'+(idx+1)+'.xml"/>'});
+  rels+='<Relationship Id="rId'+(sheets.length+1)+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>';
+  rels+='</Relationships>';
+  zip.file('xl/_rels/workbook.xml.rels',rels);
+  zip.file('xl/styles.xml',XLSX_STYLES_XML);
+  return await zip.generateAsync({type:'uint8array',compression:'DEFLATE'});
+}
+function genShiftSheetData(st,ym){
+  const parts=ym.split('-').map(Number);const dim=new Date(parts[0],parts[1],0).getDate();
+  const base=(st.settings.weekly||40)*(st.settings.weeks||4);
+  const rows=[];
+  rows.push([C('勤務形態一覧表',1)]);
+  rows.push([C('事業所名：'+(st.settings.facility||'')+'　サービス種類：'+(st.settings.service||'')+'　対象月：'+parts[0]+'年'+parts[1]+'月',2)]);
+  const head=[C('氏名',3),C('職種・資格',3),C('勤務形態',3)];
+  for(let d=1;d<=dim;d++)head.push(C(d+'\n'+weekdayLabel(ym,d),3));
+  head.push(C('合計',3),C('日数',3),C('週平均',3),C('常勤換算',3));
+  rows.push(head);
+  st.staff.forEach(s=>{
+    let sum=0,days=0;
+    const row=[C(s.name,5),C((s.job||'')+(s.qual?' / '+s.qual:''),4),C(s.type,10)];
+    for(let d=1;d<=dim;d++){
+      const rec=recOf(st,s.id,ym,d);const h=calcHours(rec,s);sum+=h;
+      if(rec&&(rec.status==='work'||rec.status==='paid'))days++;
+      if(!rec)row.push(C('',4));
+      else if(rec.status==='work')row.push(C(fmtH(h),9));
+      else if(rec.status==='paid')row.push(C('有',10));
+      else if(rec.status==='absent')row.push(C('欠',10));
+      else row.push(C('',4));
+    }
+    const conv=base?Math.min(999,sum/base):0;
+    row.push(C(fmtH(sum),9),C(days,6),C(fmtH(sum/(st.settings.weeks||4)),9),C(Number(conv.toFixed(2)),8));
+    rows.push(row);
+  });
+  rows.push([]);
+  rows.push([C('職種別の集計',5)]);
+  rows.push([C('職種',3),C('人数',3),C('合計時間',3),C('常勤換算合計',3)]);
+  const map={};
+  st.staff.forEach(s=>{const k=s.job||'未設定';if(!map[k])map[k]={count:0,conv:0,hours:0};map[k].count++;let sum=0;for(let d=1;d<=dim;d++)sum+=calcHours(recOf(st,s.id,ym,d),s);map[k].hours+=sum;map[k].conv+=base?sum/base:0});
+  Object.entries(map).forEach(([k,v])=>{rows.push([C(k,4),C(v.count,6),C(fmtH(v.hours),9),C(Number(v.conv.toFixed(2)),8)])});
+  const widths=[16,16,11];for(let d=1;d<=dim;d++)widths.push(4.5);widths.push(7,6,7,9);
+  return {name:'勤務形態一覧表',widths:widths,rows:rows,landscape:true};
+}
+function genLedgerSheetData(st,staff){
+  const months=Object.keys(st.records[staff.id]||{}).map(k=>k.slice(0,7)).filter((v,i,a)=>a.indexOf(v)===i).sort();
+  const pay=staff.pay||defaultPay();
+  const rows=[];
+  rows.push([C('賃金台帳',1)]);
+  rows.push([C('氏名',5),C(staff.name,4),C('生年月日',5),C(pay.birth||'',4),C('雇入年月日',5),C(pay.hired||'',4),C('所属',5),C(pay.dept||'',4),C('性別',5),C(pay.gender||'',4)]);
+  const calcs=months.map(ym=>payCalcMonth(st,staff,ym));
+  const head=[C('項目',3)];
+  months.forEach(ym=>{const p=ym.split('-').map(Number);const pm=p[1]===12?1:p[1]+1;const py=p[1]===12?p[0]+1:p[0];head.push(C(py+'年'+pm+'月分\n（'+p[0]+'年'+p[1]+'月勤務分）',3))});
+  rows.push(head);
+  function money(c,v){return c.calcOk?C(v,6):C('要確認',10)}
+  function line(label,fn){const r=[C(label,4)];calcs.forEach(c=>r.push(fn(c)));rows.push(r)}
+  line('労働日数',c=>C(c.workDays,6));
+  line('労働時間数',c=>C(Math.round(c.workHours*100)/100,8));
+  line('時間外労働時間数',()=>C(0,8));
+  line('休日労働時間数',()=>C(0,8));
+  line('深夜労働時間数',()=>C(0,8));
+  line('基本給',c=>money(c,c.basePay));
+  line('所定時間外割増',()=>C(0,6));
+  (pay.allowances||[]).forEach((a,ai)=>{line('手当（'+(a.name||'手当')+'）',c=>money(c,(c.allowances[ai]||{amount:0}).amount))});
+  line('交通費',c=>money(c,c.transport));
+  line('小計',c=>money(c,c.basePay+c.transport+c.allowTotal));
+  line('臨時の給与',()=>C(0,6));
+  line('賞与',()=>C(0,6));
+  line('合計',c=>money(c,c.gross));
+  const dedNames=['健康保険料','厚生年金保険料','雇用保険料','住民税','所得税'].concat(((pay.deductions&&pay.deductions.others)||[]).map(a=>a.name||'その他控除'));
+  dedNames.forEach((n,di)=>{line(n,c=>money(c,(c.deductions[di]||{amount:0}).amount))});
+  line('控除額合計',c=>money(c,c.dedTotal));
+  line('差引支給額',c=>c.calcOk?C(c.netRounded,7):C('要確認',10));
+  if(!months.length)rows.push([C('勤怠データがありません',2)]);
+  if(pay.payBlocked)rows.push([C('※ この職員は計算方式が特殊なため、金額は自動計算していません。',2)]);
+  return {name:staff.name||'台帳',widths:[20].concat(months.map(()=>16)),rows:rows,landscape:months.length>4};
+}
+function genPayslipSheetData(st,staff,ym){
+  const c=payCalcMonth(st,staff,ym);
+  const p=ym.split('-').map(Number);
+  const rows=[];
+  rows.push([C('給与明細',1)]);
+  rows.push([C('事業所名',5),C(st.settings.facility||'',4)]);
+  rows.push([C('氏名',5),C(staff.name,4)]);
+  rows.push([C('対象月',5),C(p[0]+'年'+p[1]+'月',4)]);
+  rows.push([]);
+  rows.push([C('勤務情報',5)]);
+  rows.push([C('労働日数',4),C(c.workDays,6),C('日',4)]);
+  rows.push([C('労働時間数',4),C(Math.round(c.workHours*100)/100,8),C('時間',4)]);
+  rows.push([C('有給日数',4),C(c.paidDays,6),C('日',4)]);
+  rows.push([C('欠勤日数',4),C(c.absentDays,6),C('日',4)]);
+  if(c.kmTotal)rows.push([C('自走KM',4),C(c.kmTotal,6),C('km',4)]);
+  rows.push([]);
+  rows.push([C('支給',5)]);
+  const money=v=>c.calcOk?C(v,6):C('要確認',10);
+  rows.push([C('基本給',4),money(c.basePay),C('円',4)]);
+  rows.push([C('交通費',4),money(c.transport),C('円',4)]);
+  c.allowances.forEach(a=>rows.push([C('手当（'+a.name+'）',4),money(a.amount),C('円',4)]));
+  rows.push([C('支給合計',5),c.calcOk?C(Math.round(c.gross*100)/100,7):C('要確認',10),C('円',4)]);
+  rows.push([]);
+  rows.push([C('控除',5)]);
+  c.deductions.forEach(d=>rows.push([C(d.name,4),money(d.amount),C('円',4)]));
+  rows.push([C('控除合計',5),c.calcOk?C(c.dedTotal,7):C('要確認',10),C('円',4)]);
+  rows.push([]);
+  rows.push([C('差引支給額',5),c.calcOk?C(c.netRounded,7):C('要確認',10),C('円',4)]);
+  rows.push([C('※ 有給は日数の表示のみで、金額には含んでいません（職場の様式ファイルの計算と同じ扱いです）。',2)]);
+  if(c.pay.type==='monthly')rows.push([C('※ 月給制のため、基本給は月額で計算しています。',2)]);
+  if(c.pay.payBlocked)rows.push([C('※ この職員は計算方式が特殊なため、金額を自動計算していません。',2)]);
+  else if(!c.calcOk)rows.push([C('※ 時給（または月額基本給）が未設定のため、金額を表示できません。',2)]);
+  return {name:staff.name||'明細',widths:[18,16,6],rows:rows};
+}
+async function genShiftWorkbook(st,ym){return {uint8:await buildStyledWorkbook([genShiftSheetData(st,ym)]),warnings:[]}}
+async function genLedgerWorkbook(st){
+  const warnings=[];
+  st.staff.forEach(s=>{if(s.pay&&s.pay.payBlocked)warnings.push(s.name+'：計算方式が特殊なため、金額は「要確認」と表示しました')});
+  return {uint8:await buildStyledWorkbook(st.staff.map(s=>genLedgerSheetData(st,s))),warnings:warnings};
+}
+async function genPayslipWorkbook(st,ym){
+  const warnings=[];
+  st.staff.forEach(s=>{
+    if(s.pay&&s.pay.payBlocked)warnings.push(s.name+'：計算方式が特殊なため、金額は「要確認」と表示しました');
+    else if(!(s.pay&&(s.pay.type==='monthly'?s.pay.monthlyBase!=null:s.pay.wage!=null)))warnings.push(s.name+'：時給（または月額基本給）が未設定のため、金額は「要確認」と表示しました');
+  });
+  return {uint8:await buildStyledWorkbook(st.staff.map(s=>genPayslipSheetData(st,s,ym))),warnings:warnings};
+}
+function paySerialToDate(n){
+  const d=new Date(Math.round((n-25569)*86400*1000));
+  return d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0')+'-'+String(d.getUTCDate()).padStart(2,'0');
+}
+// 取り込み用のシート候補：名字が一致するもののうち、最も長く一致するシートを選ぶ（例：佐々木なつみ→⑥佐々木なつみ（済））。
+function paySuggestSheet(staffName,sheetNames){
+  const target=String(staffName||'').replace(/\s+/g,'');
+  if(!target)return '';
+  let best='',bestScore=-1;
+  for(let i=0;i<sheetNames.length;i++){
+    const base=reflectSheetBase(sheetNames[i]).replace(/\s+/g,'');
+    if(!base)continue;
+    let score=-1;
+    if(base===target)score=1000+base.length;
+    else if(target.indexOf(base)>=0)score=100+base.length;
+    else if(base.indexOf(target)>=0)score=target.length;
+    if(score>bestScore){bestScore=score;best=sheetNames[i]}
+  }
+  return best;
+}
+function payFirstBlock(doc,shared){
+  const rows=reflectElsByTag(doc,'row');
+  for(let i=0;i<rows.length;i++){
+    const r=Number(rows[i].getAttribute('r'));
+    const cells=reflectRowCellMap(rows[i]);
+    const av=reflectCellNumeric(reflectCellInfo(cells['A'+r],shared));
+    const bv=reflectCellNumeric(reflectCellInfo(cells['B'+r],shared));
+    if(av!=null&&bv!=null&&av>=2020&&av<=2030&&bv>=1&&bv<=12)return {T:r,year:av,month:bv};
+  }
+  return null;
+}
+function payLedgerDedLatest(doc,shared,rowNum){
+  const rowEl=reflectFindRowNs(doc,rowNum);if(!rowEl)return null;
+  const cells=reflectRowCellMap(rowEl);
+  for(let ci=14;ci>=3;ci--){
+    const ref=reflectColName(ci)+rowNum;
+    if(!cells[ref])continue;
+    const v=reflectCellNumeric(reflectCellInfo(cells[ref],shared));
+    if(v!=null)return v;
+  }
+  return null;
+}
+// 給与マスタ取り込み：様式ファイルの個人シート先頭ブロックの集計部と台帳から読み取る（ファイルは変更しない）。
+async function payImportRead(buf){
+  const zip=await JSZip.loadAsync(buf);
+  const book=await reflectLoadBook(zip);
+  const sheetNames=book.sheets.map(s=>s.name);
+  const pathOf={};book.sheets.forEach(s=>{pathOf[s.name]=s.path});
+  const docCache={};
+  async function getDoc(name){
+    const p=pathOf[name];if(!p)return null;
+    if(!docCache[p]){const f=zip.file(p);if(!f)return null;docCache[p]=book.parser.parseFromString(await f.async('string'),'text/xml')}
+    return docCache[p];
+  }
+  const items=[];
+  for(let si=0;si<state.staff.length;si++){
+    const staff=state.staff[si];
+    const sheetName=paySuggestSheet(staff.name,sheetNames);
+    const item={staffId:staff.id,staffName:staff.name,sheetName:sheetName||'',found:!!sheetName,notes:[],pay:null,blocked:false,blockYear:null,blockMonth:null};
+    items.push(item);
+    if(!sheetName){item.notes.push('対応する個人シートが見つかりませんでした');continue}
+    const doc=await getDoc(sheetName);
+    if(!doc){item.notes.push('個人シートを読み込めませんでした');continue}
+    const blk=payFirstBlock(doc,book.shared);
+    if(!blk){item.notes.push('個人シートに年月ブロックが見つかりませんでした');continue}
+    const T=blk.T;item.blockYear=blk.year;item.blockMonth=blk.month;
+    const pay=defaultPay();
+    let wage=reflectCellNumeric(reflectBlockCellInfo(doc,book.shared,T,'P',11));
+    const gInfo=reflectBlockCellInfo(doc,book.shared,T,'G',15);
+    const gFormula=(gInfo.kind==='formula'&&gInfo.formula)?gInfo.formula.replace(/\s+/g,''):'';
+    if(wage==null&&gFormula){
+      const mm=gFormula.match(new RegExp('B'+(T+13)+'\\*([0-9]+(?:\\.[0-9]+)?)'));
+      if(mm)wage=parseFloat(mm[1]);
+    }
+    if(wage!=null)pay.wage=wage;
+    else item.notes.push('時給が読み取れませんでした');
+    if(!gFormula||gFormula.indexOf('B'+(T+13))<0){
+      item.blocked=true;pay.payBlocked=true;pay.payNote='総支給額の計算式が標準と異なります';
+      item.notes.push('総支給額の計算式が標準と異なるため、自動計算の対象外にしました');
+    }
+    const bInfo=reflectBlockCellInfo(doc,book.shared,T,'B',14);
+    if(bInfo.kind==='formula'&&bInfo.formula){
+      const bf=bInfo.formula.replace(/\s+/g,'');
+      const tm=bf.match(new RegExp('AI'+(T+8)+'\\*([0-9]+(?:\\.[0-9]+)?)\\)?/([0-9]+(?:\\.[0-9]+)?)'));
+      if(tm)pay.transport={mode:'km',rate:parseFloat(tm[1])/parseFloat(tm[2])};
+      else{pay.transport={mode:'none',rate:null};item.notes.push('交通費の計算式が標準（自走KM×単価）と異なるため「なし」にしました')}
+      if(gFormula.indexOf('-B'+(T+14))>=0){
+        // 車両貸出の相殺（他職員の交通費分を差し引き）が特殊計算されていた職員。
+        // アプリでは通常計算（交通費を加算）に統一し、相殺は控除「車両貸出調整」で見える形にする。
+        pay.vehicleAdjust=true;
+        if(!pay.deductions.others.some(o=>o.name==='車両貸出調整'))pay.deductions.others.push({name:'車両貸出調整',amount:0});
+        item.notes.push('旧ファイルでは車両貸出の相殺（他職員の交通費分を差し引き）が特殊計算されていました。アプリでは通常計算に統一しています。相殺が必要な月は、控除の「車両貸出調整」に金額を入れてください');
+      }
+    }else{
+      const bv=reflectCellNumeric(bInfo);
+      if(bv!=null)pay.transport={mode:'fixed',rate:bv};
+      else pay.transport={mode:'none',rate:null};
+    }
+    if(gFormula){
+      const known={};known['B'+(T+13)]=1;known['P'+(T+11)]=1;known['B'+(T+14)]=1;known['H'+(T+12)]=1;known['H'+(T+13)]=1;known['H'+(T+14)]=1;
+      const refs=gFormula.match(/[A-Z]+\d+/g)||[];
+      const seen={};
+      refs.forEach(ref=>{
+        if(known[ref]||seen[ref])return;seen[ref]=1;
+        const row=Number(ref.replace(/[A-Z]/g,''));
+        const rowEl=reflectFindRowNs(doc,row);if(!rowEl)return;
+        const v=reflectCellNumeric(reflectCellInfo(reflectRowCellMap(rowEl)[ref],book.shared));
+        if(v!=null&&v!==0){pay.allowances.push({name:'その他調整（様式より）',amount:v});item.notes.push('調整セル '+ref+' の値（'+v+'円）を手当として取り込みました')}
+      });
+    }
+    const dedAt=off=>{const v=reflectCellNumeric(reflectBlockCellInfo(doc,book.shared,T,'H',off));return v==null?0:v};
+    pay.deductions.employment=dedAt(12);pay.deductions.resident=dedAt(13);pay.deductions.income=dedAt(14);
+    const ledgerName=reflectLedgerSheetName(sheetName,sheetNames);
+    if(ledgerName){
+      const ldoc=await getDoc(ledgerName);
+      if(ldoc){
+        const labels={'生年月日':'birth','雇入年月日':'hired','所属':'dept','性別':'gender'};
+        for(let r=1;r<=3;r++){
+          const rowEl=reflectFindRowNs(ldoc,r);if(!rowEl)continue;
+          const cells=reflectRowCellMap(rowEl);
+          Object.keys(cells).forEach(ref=>{
+            const info=reflectCellInfo(cells[ref],book.shared);
+            if(info.kind!=='string'||!info.value)return;
+            const key=labels[info.value.trim()];if(!key)return;
+            const col=ref.replace(/[0-9]/g,'');
+            const below=reflectFindRowNs(ldoc,r+1);if(!below)return;
+            const vinfo=reflectCellInfo(reflectRowCellMap(below)[col+(r+1)],book.shared);
+            if(key==='birth'||key==='hired'){
+              const nv=reflectCellNumeric(vinfo);
+              if(nv!=null&&nv>20000)pay[key]=paySerialToDate(nv);
+              else if(vinfo.kind==='string'&&vinfo.value)pay[key]=vinfo.value;
+            }else if(vinfo.kind==='string'&&vinfo.value)pay[key]=vinfo.value;
+          });
+        }
+        const hp=payLedgerDedLatest(ldoc,book.shared,23);if(hp!=null&&hp!==0){pay.deductions.health=hp;item.notes.push('健康保険料を台帳から取り込みました')}
+        const pp=payLedgerDedLatest(ldoc,book.shared,24);if(pp!=null&&pp!==0){pay.deductions.pension=pp;item.notes.push('厚生年金保険料を台帳から取り込みました')}
+      }
+    }
+    item.pay=pay;
+  }
+  return items;
+}
+/* === PAYGEN CORE END === */
+
+/* === PUNCH CORE START === */
+// 打刻のコア処理。state.records と同じ形式の records オブジェクトに対して動作する。
+// レコード形式は既存と同一 {status:'work', start:'HH:MM', end:'HH:MM', breakMin:分} で、
+// 休憩中のみ任意フィールド breakStart:'HH:MM' を持つ（既存の集計・反映は breakMin だけを見る）。
+function punchTimeToMin(t){if(!t)return 0;const p=String(t).split(':');if(p.length<2)return 0;return Number(p[0])*60+Number(p[1])}
+function punchPad(n){return String(n).padStart(2,'0')}
+function punchDateParts(date){
+  const y=date.getFullYear(),m=date.getMonth()+1,d=date.getDate();
+  const ym=y+'-'+punchPad(m);
+  return {ym:ym,day:d,key:ym+'-'+punchPad(d),time:punchPad(date.getHours())+':'+punchPad(date.getMinutes())};
+}
+function punchDispTime(t){if(!t)return '';const p=String(t).split(':');if(p.length<2)return String(t);return Number(p[0])+':'+punchPad(Number(p[1]))}
+function punchStatus(rec){
+  if(!rec)return 'none';
+  if(rec.status==='paid')return 'paid';
+  if(rec.status==='absent')return 'absent';
+  if(rec.status!=='work')return 'none';
+  if(rec.breakStart)return 'break';
+  if(rec.start&&rec.end)return 'done';
+  if(rec.start)return 'working';
+  return 'none';
+}
+// action: 'in' | 'breakStart' | 'breakEnd' | 'out'
+// 退勤済み・有給・欠勤の日に 'in' する場合は force=true が必要（UI側で confirm 済みであること）。
+// 休憩中に 'out' した場合は、その時刻で休憩を終えたものとして休憩時間を加算する。
+function punchDo(records,staff,action,date,force){
+  const parts=punchDateParts(date);const sid=staff.id;
+  if(!records[sid])records[sid]={};
+  const dayRecs=records[sid];
+  const rec=dayRecs[parts.key]||null;
+  const st=punchStatus(rec);const t=parts.time;
+  if(action==='in'){
+    if(st==='working'||st==='break')return {ok:false,error:'already',status:st};
+    if((st==='done'||st==='paid'||st==='absent')&&!force)return {ok:false,needsConfirm:true,status:st};
+    dayRecs[parts.key]={status:'work',start:t,end:'',breakMin:0};
+    return {ok:true,status:'working',label:'出勤',time:t};
+  }
+  if(action==='breakStart'){
+    if(st!=='working')return {ok:false,error:'badstate',status:st};
+    rec.breakStart=t;
+    return {ok:true,status:'break',label:'休憩開始',time:t};
+  }
+  if(action==='breakEnd'){
+    if(st!=='break')return {ok:false,error:'badstate',status:st};
+    rec.breakMin=(rec.breakMin||0)+Math.max(0,punchTimeToMin(t)-punchTimeToMin(rec.breakStart));
+    delete rec.breakStart;
+    return {ok:true,status:'working',label:'休憩終了',time:t};
+  }
+  if(action==='out'){
+    if(st==='break'){
+      rec.breakMin=(rec.breakMin||0)+Math.max(0,punchTimeToMin(t)-punchTimeToMin(rec.breakStart));
+      delete rec.breakStart;
+    }else if(st!=='working')return {ok:false,error:'badstate',status:st};
+    rec.end=t;
+    return {ok:true,status:'done',label:'退勤',time:t};
+  }
+  return {ok:false,error:'unknown',status:st};
+}
+/* === PUNCH CORE END === */
+
+// 打刻（UI）
+let punchStaffId=null;
+let punchTimer=null;
+function punchStatusText(rec){
+  const st=punchStatus(rec);
+  if(st==='working')return '出勤中（'+punchDispTime(rec.start)+'〜）';
+  if(st==='break')return '休憩中（'+punchDispTime(rec.breakStart)+'〜）';
+  if(st==='done')return '退勤済み（'+punchDispTime(rec.start)+'〜'+punchDispTime(rec.end)+'）';
+  if(st==='paid')return '有給';
+  if(st==='absent')return '欠勤';
+  return '未出勤';
+}
+function punchShow(view){
+  $('punchMain').classList.toggle('hidden',view!=='main');
+  $('punchPanel').classList.toggle('hidden',view!=='panel');
+  $('punchDone').classList.toggle('hidden',view!=='done');
+}
+function renderPunch(){
+  if(punchTimer){clearTimeout(punchTimer);punchTimer=null}
+  punchShow('main');
+  const now=new Date();const parts=punchDateParts(now);
+  const w=['日','月','火','水','木','金','土'][now.getDay()];
+  $('punchDate').textContent=now.getFullYear()+'年'+(now.getMonth()+1)+'月'+now.getDate()+'日（'+w+'）';
+  $('punchNoStaff').classList.toggle('hidden',state.staff.length>0);
+  $('punchGrid').innerHTML=state.staff.map(function(s){
+    const rec=(state.records[s.id]||{})[parts.key]||null;
+    const st=punchStatus(rec);
+    return '<button class="punch-staff st-'+st+'" onclick="openPunchPanel(\''+s.id+'\')"><span class="pname">'+escapeHtml(s.name)+'</span><span class="pstatus">'+punchStatusText(rec)+'</span></button>';
+  }).join('');
+  updatePunchClock();
+}
+function updatePunchClock(){
+  const now=new Date();
+  const txt=punchDispTime(punchPad(now.getHours())+':'+punchPad(now.getMinutes()))+':'+punchPad(now.getSeconds());
+  const c1=$('punchClock');if(c1)c1.textContent=txt;
+  const c2=$('punchPanelClock');if(c2)c2.textContent=txt;
+}
+setInterval(updatePunchClock,1000);
+window.openPunchPanel=function(id){punchStaffId=id;renderPunchPanel();punchShow('panel')};
+function renderPunchPanel(){
+  const s=state.staff.find(function(x){return x.id===punchStaffId});
+  if(!s){punchShow('main');return}
+  const parts=punchDateParts(new Date());
+  const rec=(state.records[s.id]||{})[parts.key]||null;
+  const st=punchStatus(rec);
+  $('punchPanelName').textContent=s.name+' さん';
+  let note='';
+  if(st==='done')note='すでに退勤済みです。「出勤」を押すと、確認のうえ上書きされます。';
+  if(st==='paid')note='今日は「有給」で登録されています。「出勤」を押すと、確認のうえ上書きされます。';
+  if(st==='absent')note='今日は「欠勤」で登録されています。「出勤」を押すと、確認のうえ上書きされます。';
+  $('punchPanelStatus').innerHTML=punchStatusText(rec)+(note?'<div style="font-size:13px;color:var(--red);margin-top:6px">'+escapeHtml(note)+'</div>':'');
+  $('pbIn').disabled=!(st==='none'||st==='done'||st==='paid'||st==='absent');
+  $('pbBreakStart').disabled=st!=='working';
+  $('pbBreakEnd').disabled=st!=='break';
+  $('pbOut').disabled=!(st==='working'||st==='break');
+  updatePunchClock();
+}
+function doPunch(action){
+  const s=state.staff.find(function(x){return x.id===punchStaffId});
+  if(!s)return;
+  let res=punchDo(state.records,s,action,new Date(),false);
+  if(res.needsConfirm){
+    if(!confirm('すでに登録済みの内容があります。打刻すると上書きされます。よろしいですか？'))return;
+    res=punchDo(state.records,s,action,new Date(),true);
+  }
+  if(!res.ok){renderPunchPanel();return}
+  save();
+  $('punchDoneMsg').textContent=s.name+'さん '+res.label+' '+punchDispTime(res.time)+' で打刻しました';
+  punchShow('done');
+  if(punchTimer)clearTimeout(punchTimer);
+  punchTimer=setTimeout(function(){renderPunch()},3000);
+}
+$('pbIn').addEventListener('click',()=>doPunch('in'));
+$('pbBreakStart').addEventListener('click',()=>doPunch('breakStart'));
+$('pbBreakEnd').addEventListener('click',()=>doPunch('breakEnd'));
+$('pbOut').addEventListener('click',()=>doPunch('out'));
+$('punchBackBtn').addEventListener('click',()=>renderPunch());
+$('punchDoneBackBtn').addEventListener('click',()=>renderPunch());
+
+// 給与・新規作成（UI）
+function refreshPayLock(){
+  const locked=adminIsLocked();
+  const f=$('payFields'),n=$('payLockNotice');
+  if(f)f.classList.toggle('hidden',locked);
+  if(n)n.classList.toggle('hidden',!locked);
+}
+function refreshDocLock(){
+  const locked=adminIsLocked();
+  const a=$('newDocArea'),l=$('newDocLock');
+  if(a)a.classList.toggle('hidden',locked);
+  if(l)l.classList.toggle('hidden',!locked);
+}
+function refreshPinStatus(){
+  const el=$('pinStatus');if(!el)return;
+  el.innerHTML=adminPinSet()
+    ?'<div class="success">PIN設定済みです'+(adminAuthed?'（ロック解除中）':'（ロック中）')+'</div>'
+    :'<p class="muted">PINは設定されていません。</p>';
+  const rb=$('pinRemoveBtn');if(rb)rb.disabled=!adminPinSet();
+}
+let pinPending=null;
+function requireAdmin(cb){
+  if(!adminIsLocked()){cb();return}
+  pinPending=cb;
+  $('pinInput').value='';$('pinOverlayMsg').innerHTML='';
+  $('pinOverlay').classList.remove('hidden');
+  setTimeout(()=>{const pi=$('pinInput');if(pi)pi.focus()},50);
+}
+function closePinOverlay(){$('pinOverlay').classList.add('hidden');pinPending=null}
+$('pinOkBtn').addEventListener('click',()=>{
+  if(payPinCheck($('pinInput').value)){
+    adminAuthed=true;
+    const cb=pinPending;closePinOverlay();
+    refreshPayLock();refreshDocLock();refreshPinStatus();renderStaff();
+    if(cb)cb();
+  }else{
+    $('pinOverlayMsg').innerHTML='<div class="notice" style="margin-top:10px">PINが違います</div>';
+  }
+});
+$('pinCancelBtn').addEventListener('click',closePinOverlay);
+$('payUnlockBtn').addEventListener('click',()=>requireAdmin(()=>{}));
+$('newDocUnlockBtn').addEventListener('click',()=>requireAdmin(()=>{}));
+$('pinSetBtn').addEventListener('click',()=>{
+  const v=$('pinNew').value.trim();
+  if(!/^\d{4}$/.test(v)){$('pinMsg').innerHTML='<div class="notice" style="margin-top:10px">数字4桁で入力してください</div>';return}
+  const doSet=()=>{state.settings.adminPin=v;adminAuthed=true;save();$('pinNew').value='';$('pinMsg').innerHTML='<div class="success" style="margin-top:10px">PINを設定しました</div>';refreshPinStatus();refreshPayLock();refreshDocLock()};
+  if(adminPinSet()&&!adminAuthed)requireAdmin(doSet);else doSet();
+});
+$('pinRemoveBtn').addEventListener('click',()=>{
+  if(!adminPinSet()){$('pinMsg').innerHTML='<div class="notice" style="margin-top:10px">PINは設定されていません</div>';return}
+  const doRemove=()=>{delete state.settings.adminPin;adminAuthed=false;save();$('pinMsg').innerHTML='<div class="success" style="margin-top:10px">PINを解除しました</div>';refreshPinStatus();refreshPayLock();refreshDocLock()};
+  if(!adminAuthed)requireAdmin(doRemove);else if(confirm('PINを解除しますか？'))doRemove();
+});
+function addPayKv(listId){const cur=readPayKv(listId);cur.push({name:'',amount:''});renderPayKv(listId,cur)}
+$('payAllowAdd').addEventListener('click',()=>addPayKv('payAllowList'));
+$('payDedOtherAdd').addEventListener('click',()=>addPayKv('payDedOtherList'));
+let payImportPending=null;
+function renderPayImportConfirm(items){
+  const area=$('payImportArea');
+  if(!items.length){area.innerHTML='<div class="notice" style="margin-top:10px">職員が登録されていません。先に「職員」タブで登録してください。</div>';return}
+  let html='<h3>取り込み内容の確認</h3><div class="table-wrap"><table class="import-table"><tr><th class="left">職員</th><th class="left">個人シート</th><th>時給</th><th class="left">交通費</th><th class="left">控除（雇用/住民/所得）</th><th class="left">備考</th></tr>';
+  items.forEach(it=>{
+    if(!it.pay){html+='<tr><td class="left">'+escapeHtml(it.staffName)+'</td><td class="left">'+escapeHtml(it.sheetName||'（なし）')+'</td><td colspan="3"></td><td class="left">'+it.notes.map(escapeHtml).join('／')+'</td></tr>';return}
+    const p=it.pay;
+    const wage=p.wage!=null?Number(p.wage).toLocaleString()+'円':'―';
+    const tr=p.transport.mode==='km'?('自走KM×'+p.transport.rate+'円'):p.transport.mode==='fixed'?('月額 '+Number(p.transport.rate||0).toLocaleString()+'円'):'なし';
+    const ded=[p.deductions.employment,p.deductions.resident,p.deductions.income].map(v=>Number(v||0).toLocaleString()).join(' / ');
+    html+='<tr><td class="left">'+escapeHtml(it.staffName)+'</td><td class="left">'+escapeHtml(it.sheetName)+'（'+it.blockYear+'年'+it.blockMonth+'月）</td><td>'+wage+'</td><td class="left">'+tr+'</td><td class="left">'+ded+'</td><td class="left">'+it.notes.map(escapeHtml).join('／')+'</td></tr>';
+  });
+  html+='</table></div><p class="muted">取り込むと、各職員の給与マスタが上の内容で上書きされます。台帳情報（生年月日・雇入年月日・所属・性別）が読み取れた場合はそれも反映します。</p><div class="flex"><button class="btn btn-primary btn-small" id="payImportConfirm" type="button">この内容で取り込む</button><button class="btn btn-secondary btn-small" id="payImportCancel" type="button">キャンセル</button></div>';
+  area.innerHTML=html;
+  $('payImportConfirm').addEventListener('click',()=>{
+    let n=0;
+    (payImportPending||[]).forEach(it=>{
+      if(!it.pay)return;
+      const s=state.staff.find(x=>x.id===it.staffId);if(!s)return;
+      s.pay=it.pay;n++;
+    });
+    save();renderStaff();
+    area.innerHTML='<div class="success" style="margin-top:10px">'+n+' 名の給与マスタを取り込みました。内容は「職員」タブの編集画面で確認・変更できます。</div>';
+    payImportPending=null;
+  });
+  $('payImportCancel').addEventListener('click',()=>{area.innerHTML='';payImportPending=null});
+}
+$('payImportBtn').addEventListener('click',async()=>{
+  const f=$('payImportFile').files[0];
+  if(!f){alert('様式ファイルを選んでください');return}
+  const btn=$('payImportBtn');btn.disabled=true;btn.textContent='読み取り中…';
+  try{
+    await ensureZipLib();
+    const buf=await f.arrayBuffer();
+    const items=await payImportRead(buf);
+    payImportPending=items;
+    renderPayImportConfirm(items);
+  }catch(e){
+    $('payImportArea').innerHTML='<div class="notice" style="margin-top:10px">様式ファイルを読み込めませんでした。インターネット接続とファイル形式を確認してください。</div>';
+  }finally{btn.disabled=false;btn.textContent='内容を確認する'}
+});
+async function runGen(kind){
+  if(!state.staff.length){alert('先に「職員」タブで職員を登録してください');return}
+  const resEl=$('genResult');
+  try{
+    await ensureZipLib();
+    let out,filename;
+    if(kind==='shift'){out=await genShiftWorkbook(state,currentMonth());filename='勤務形態一覧表（新規）_'+currentMonth()+'.xlsx'}
+    else if(kind==='ledger'){out=await genLedgerWorkbook(state);filename='賃金台帳（新規）.xlsx'}
+    else{out=await genPayslipWorkbook(state,currentMonth());filename='給与明細（新規）_'+currentMonth()+'.xlsx'}
+    const blob=new Blob([out.uint8],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+    download(blob,filename,'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    let html='<div class="success" style="margin-top:10px">作成しました：'+escapeHtml(filename);
+    (out.warnings||[]).forEach(w=>{html+='<br>⚠ '+escapeHtml(w)});
+    html+='</div>';
+    resEl.innerHTML=html;
+  }catch(e){
+    resEl.innerHTML='<div class="notice" style="margin-top:10px">作成に失敗しました。インターネット接続を確認して、もう一度お試しください。</div>';
+  }
+}
+$('genShiftBtn').addEventListener('click',()=>runGen('shift'));
+$('genLedgerBtn').addEventListener('click',()=>runGen('ledger'));
+$('genPayslipBtn').addEventListener('click',()=>runGen('payslip'));
+fillPayForm(null);refreshPayLock();refreshDocLock();refreshPinStatus();
+
+renderHeader();renderSettings();renderInput();renderStaff();renderSheetLabel();
+if(state.settings.startPunch!==false)switchTab('punch');
+</script>
+</body>
+</html>
